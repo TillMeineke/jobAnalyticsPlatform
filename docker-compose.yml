@@ -91,8 +91,13 @@ services:
             enabled: true
           tutorialFlows:
             enabled: false
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
     volumes:
       - kestra-storage:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
       - ./flows:/app/flows
     networks:
       - job-analytics-network
@@ -123,8 +128,13 @@ services:
             type: postgres
           standalone:
             enabled: true
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
     volumes:
       - kestra-storage:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
       - ./src:/app/src
       - ./data:/app/data
     networks:

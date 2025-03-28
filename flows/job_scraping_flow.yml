@@ -20,16 +20,14 @@ tasks:
       
       # Print success message
       print("Job scraping completed successfully")
-    docker:
-      image: python:3.11-slim
-    volumes:
-      - /app/src:/app/src
-      - /app/data:/app/data
+    containerImage: python:3.11-slim
+    inputFiles:
+      src: /app/src
+      data: /app/data
   
   - id: process_with_dlt
     type: io.kestra.plugin.scripts.python.Script
-    dependsOn:
-      - scrape_stepstone
+    runIf: "{{ tasks.scrape_stepstone.status == 'SUCCESS' }}"
     script: |
       import sys
       import os
@@ -86,16 +84,15 @@ tasks:
       info = pipeline.process_jobs(job_data, metadata)
       
       print(f"DLT processing complete: {info}")
-    docker:
-      image: python:3.11-slim
-    volumes:
-      - /app/src:/app/src
-      - /app/data:/app/data
-      - /app/.dlt:/app/.dlt
+    containerImage: python:3.11-slim
+    inputFiles:
+      src: /app/src
+      data: /app/data
+      dlt: /app/.dlt
 
 triggers:
   - id: schedule
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "0 0 * * *"  # Run daily at midnight
 
 labels:

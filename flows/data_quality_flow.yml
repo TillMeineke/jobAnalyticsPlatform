@@ -61,10 +61,10 @@ tasks:
       print("Data quality check passed!")
     docker:
       image: python:3.11-slim
-    volumes:
-      - /app/src:/app/src
-      - /app/data:/app/data
-      - /app/.dlt:/app/.dlt
+      volumes:
+        - /app/src:/app/src
+        - /app/data:/app/data
+        - /app/.dlt:/app/.dlt
 
 triggers:
   - id: schedule
