@@ -1,0 +1,103 @@
+id: job_scraping_flow
+namespace: job_analytics
+revision: 1
+
+tasks:
+  - id: scrape_stepstone
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import sys
+      import os
+      
+      # Add project root to path
+      sys.path.append("/app")
+      
+      # Import and run the scraper
+      from src.run_scraper import main
+      
+      # Run the scraper with default parameters
+      main()
+      
+      # Print success message
+      print("Job scraping completed successfully")
+    docker:
+      image: python:3.11-slim
+    volumes:
+      - /app/src:/app/src
+      - /app/data:/app/data
+  
+  - id: process_with_dlt
+    type: io.kestra.plugin.scripts.python.Script
+    dependsOn:
+      - scrape_stepstone
+    script: |
+      import sys
+      import os
+      
+      # Add project root to path
+      sys.path.append("/app")
+      
+      # Import DLT pipeline components
+      from src.data_processing.dlt_pipeline import JobPipelineConfig, JobDataPipeline
+      import json
+      import glob
+      from datetime import datetime
+      
+      # Find the most recent job data files
+      data_dir = "/app/data/raw"
+      json_files = glob.glob(f"{data_dir}/*.json")
+      
+      if not json_files:
+          print("No job data files found!")
+          sys.exit(1)
+      
+      # Sort by modification time and get the most recent
+      latest_file = max(json_files, key=os.path.getmtime)
+      print(f"Processing file: {latest_file}")
+      
+      # Load job data
+      with open(latest_file, "r") as f:
+          job_data = json.load(f)
+      
+      # Get metadata from filename
+      filename = os.path.basename(latest_file)
+      parts = filename.split("_")
+      search_term = parts[0].replace("-", " ")
+      location = parts[1]
+      
+      # Create metadata
+      metadata = {
+          "search_term": search_term,
+          "location": location,
+          "timestamp": datetime.now().isoformat(),
+          "source": "stepstone"
+      }
+      
+      # Initialize DLT pipeline
+      config = JobPipelineConfig(
+          destination="filesystem",
+          dataset_name="job_data",
+          schema_name="bronze"
+      )
+      
+      pipeline = JobDataPipeline(config)
+      
+      # Process the job data
+      info = pipeline.process_jobs(job_data, metadata)
+      
+      print(f"DLT processing complete: {info}")
+    docker:
+      image: python:3.11-slim
+    volumes:
+      - /app/src:/app/src
+      - /app/data:/app/data
+      - /app/.dlt:/app/.dlt
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 0 * * *"  # Run daily at midnight
+
+labels:
+  owner: data-team
+  priority: high

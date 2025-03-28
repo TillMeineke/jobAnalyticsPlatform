@@ -1,0 +1,48 @@
+---
+# Kestra global configuration
+datasources:
+  postgres:
+    url: jdbc:postgresql://kestra-postgres:5432/kestra
+    driverClassName: org.postgresql.Driver
+    username: kestra
+    password: kestra
+
+kestra:
+  # The base url for this instance
+  url: http://localhost:8080/
+  
+  # Queue configuration 
+  queue:
+    type: postgres
+  
+  # Storage configuration
+  storage:
+    type: local
+    local:
+      basePath: "/app/storage"
+    
+  # Repository configuration
+  repository:
+    type: postgres
+    
+  # Server configuration
+  server:
+    port: 8080
+    access-log:
+      enabled: true
+      name: access
+      format: "%{yyyy-MM-dd HH:mm:ss.SSS}t %h %s '%r' %b %D"
+    cors:
+      enabled: true
+    basicAuth:
+      enabled: true
+      username: "admin@kestra.io"  # must be a valid email address
+      password: admin
+      
+  # Standalone configuration
+  standalone:
+    enabled: true
+    
+  # Disable tutorial flows
+  tutorialFlows:
+    enabled: false

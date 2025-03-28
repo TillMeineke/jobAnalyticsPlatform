@@ -1,0 +1,86 @@
+id: data_quality_flow
+namespace: job_analytics
+revision: 1
+
+tasks:
+  - id: check_data_quality
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import sys
+      import os
+      import json
+      import glob
+      from datetime import datetime
+      
+      # Add project root to path
+      sys.path.append("/app")
+      
+      # Import DLT pipeline components
+      from src.data_processing.dlt_pipeline import JobPipelineConfig, JobDataPipeline
+      
+      def get_latest_job_data():
+          """Find and load the most recent job data file"""
+          data_dir = "/app/data/raw"
+          json_files = glob.glob(f"{data_dir}/*.json")
+          
+          if not json_files:
+              print("No job data files found!")
+              sys.exit(1)
+          
+          # Sort by modification time and get the most recent
+          latest_file = max(json_files, key=os.path.getmtime)
+          print(f"Processing file: {latest_file}")
+          
+          # Load job data
+          with open(latest_file, "r") as f:
+              return json.load(f)
+      
+      # Get the job data
+      job_data = get_latest_job_data()
+      
+      # Initialize DLT pipeline
+      config = JobPipelineConfig(
+          destination="filesystem",
+          dataset_name="job_data",
+          schema_name="bronze"
+      )
+      
+      pipeline = JobDataPipeline(config)
+      
+      # Check data quality
+      quality_metrics = pipeline.verify_data_quality(job_data)
+      
+      # Output metrics as JSON
+      print(json.dumps(quality_metrics, indent=2))
+      
+      # Check if quality meets minimum standards
+      if quality_metrics["complete_data_percentage"] < 60:
+          print(f"WARNING: Complete data percentage is only {quality_metrics['complete_data_percentage']}%, which is below the 60% threshold")
+          sys.exit(1)
+          
+      print("Data quality check passed!")
+    docker:
+      image: python:3.11-slim
+    volumes:
+      - /app/src:/app/src
+      - /app/data:/app/data
+      - /app/.dlt:/app/.dlt
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 12 * * *"  # Run daily at noon
+
+  - id: after_job_scraping
+    type: io.kestra.core.models.triggers.types.Flow
+    conditions:
+      - type: io.kestra.core.models.conditions.types.ExecutionStatusCondition
+        in:
+          - SUCCESS
+      - type: io.kestra.core.models.conditions.types.FlowCondition
+        namespace: job_analytics
+        flowId: job_scraping_flow
+
+labels:
+  owner: data-team
+  priority: medium

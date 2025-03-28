@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   job-scraper:
     build:
@@ -16,6 +14,7 @@ services:
 
   metabase:
     image: metabase/metabase:latest
+    platform: linux/amd64  # Use amd64 with emulation since arm64 isn't available
     ports:
       - "3000:3000"
     environment:
@@ -40,21 +39,118 @@ services:
       - POSTGRES_DB=metabase
     networks:
       - job-analytics-network
-  # Uncomment to include Kestra for orchestration when needed
-  # kestra:
-  #   image: kestra/kestra:latest
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - KESTRA_CONFIGURATION=/app/kestra/configuration.yml
-  #   volumes:
-  #     - ./kestra:/app/kestra
-  #   networks:
-  #     - job-analytics-network
+
+  # Kestra Services
+  kestra-postgres:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=kestra
+      - POSTGRES_PASSWORD=kestra
+      - POSTGRES_DB=kestra
+    volumes:
+      - kestra-postgres-data:/var/lib/postgresql/data
+    networks:
+      - job-analytics-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      retries: 10
+
+  kestra-server:
+    image: kestra/kestra:latest
+    restart: unless-stopped
+    user: "root"
+    command: server standalone
+    ports:
+      - "8080:8080"
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra-postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: kestra
+            password: kestra
+        kestra:
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          server:
+            basicAuth:
+              enabled: true
+              username: "admin@kestra.io"
+              password: admin
+          url: http://localhost:8080/
+          standalone:
+            enabled: true
+          tutorialFlows:
+            enabled: false
+    volumes:
+      - kestra-storage:/app/storage
+      - ./flows:/app/flows
+    networks:
+      - job-analytics-network
+    depends_on:
+      kestra-postgres:
+        condition: service_healthy
+
+  kestra-worker:
+    image: kestra/kestra:latest
+    restart: unless-stopped
+    command: worker standalone
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra-postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: kestra
+            password: kestra
+        kestra:
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          standalone:
+            enabled: true
+    volumes:
+      - kestra-storage:/app/storage
+      - ./src:/app/src
+      - ./data:/app/data
+    networks:
+      - job-analytics-network
+    depends_on:
+      - kestra-server
+
+  kestra-elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
+    platform: linux/arm64  # Explicitly set the platform for M1/M2 Mac compatibility
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    restart: unless-stopped
+    volumes:
+      - kestra-elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - job-analytics-network
 
 networks:
   job-analytics-network:
 
-
 volumes:
   postgres-data:
+  kestra-postgres-data:
+  kestra-elasticsearch-data:
+  kestra-storage:

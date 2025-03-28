@@ -183,7 +183,7 @@ The dataset contains job listings with attributes including:
 
 ## Reproducibility: Setup and Installation
 
-### Prerequisites
+### Prerequisites for Setup
 
 - Python 3.11.8
 - AWS account with appropriate permissions
@@ -451,22 +451,26 @@ Additional services (commented out in docker-compose.yml):
 This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
 
 1. Create a `.dlt` directory in the project root (if it doesn't exist):
+
    ```bash
    mkdir -p .dlt
    ```
 
 2. Copy the example secrets file and modify it for your environment:
+
    ```bash
    cp .dlt/secrets.toml.example .dlt/secrets.toml
    ```
 
 3. Edit `.dlt/secrets.toml` with your configuration:
+
    ```toml
    [destination.filesystem]
    bucket_url = "file:///path/to/your/data/folder"
    ```
 
    For S3 configuration, uncomment and configure the S3 section:
+
    ```toml
    [destination.s3]
    bucket_name = "your-s3-bucket-name"
@@ -517,10 +521,13 @@ This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
 - [ ] Implement standardization logic
 - [ ] Build analytics views
 
-### 4. Orchestration (🔴 Not Started)
+### 4. Orchestration (🟢 Configured)
 
-- [ ] Create Kestra workflows
-- [ ] Set up scheduling and monitoring
+- [x] Created Kestra configuration
+- [x] Set up job scraping workflow
+- [x] Set up data quality workflow
+- [x] Added scheduling and dependency management
+- [x] Configured Docker services for Kestra
 
 ### 5. Visualization (🔴 Not Started)
 
