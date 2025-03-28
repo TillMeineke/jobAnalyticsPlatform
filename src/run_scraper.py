@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.scraper.stepstone_scraper import StepstoneScraper
 from src.data_processing.data_saver import DataSaver
+from src.data_processing.dlt_pipeline import JobPipelineConfig, JobDataPipeline
 
 # Configure logging
 logging.basicConfig(
@@ -92,6 +93,19 @@ def setup_arg_parser() -> argparse.ArgumentParser:
         help='Output directory path (default: data/raw/bronze)'
     )
     
+    parser.add_argument(
+        '--use-dlt',
+        action='store_true',
+        help='Use DLT pipeline for data loading (instead of direct file saving)'
+    )
+    
+    parser.add_argument(
+        '--aws-region',
+        type=str,
+        default='eu-central-1',
+        help='AWS region (default: eu-central-1)'
+    )
+    
     return parser
 
 
@@ -152,27 +166,63 @@ def main():
             logger.warning("No jobs found. Nothing to save.")
             return
         
-        # Configure data saver
-        data_saver = DataSaver(
-            base_path=args.output_path,
-            use_s3=args.use_s3,
-            s3_bucket=args.s3_bucket if args.use_s3 else None
-        )
-        
-        # Save the data in requested formats
         timestamp = datetime.now()
-        save_results = data_saver.save_data(
-            jobs, 
-            args.search_term, 
-            args.location, 
-            formats=output_formats,
-            timestamp=timestamp
-        )
         
-        # Report results
-        logger.info(f"Job data saved successfully:")
-        for fmt, path in save_results.items():
-            logger.info(f"  - {fmt.upper()}: {path}")
+        # Create metadata dict for enrichment
+        search_metadata = {
+            "search_term": args.search_term,
+            "location": args.location,
+            "timestamp": timestamp.isoformat(),
+            "source": "stepstone"
+        }
+        
+        # Use DLT pipeline if specified, otherwise use direct file saving
+        if args.use_dlt:
+            # Configure the DLT pipeline
+            pipeline_config = JobPipelineConfig(
+                destination="s3" if args.use_s3 else "filesystem",
+                dataset_name=f"job_data_{args.search_term.replace(' ', '_')}",
+                schema_name="bronze",
+                pipeline_name="job_pipeline",
+                s3_bucket=args.s3_bucket if args.use_s3 else None,
+                aws_region=args.aws_region if args.use_s3 else None
+            )
+            
+            # Initialize and run the pipeline
+            pipeline = JobDataPipeline(pipeline_config)
+            
+            # Check data quality and log metrics
+            quality_metrics = pipeline.verify_data_quality(jobs)
+            logger.info(f"Data quality check: {quality_metrics['complete_data_percentage']}% complete data")
+            
+            # Process and load the data
+            load_info = pipeline.process_jobs(jobs, search_metadata)
+            
+            # Report results
+            logger.info(f"Job data loaded successfully via DLT pipeline to {pipeline_config.destination}")
+            logger.info(f"Loaded {len(jobs)} jobs with {quality_metrics['complete_data_percentage']}% complete data")
+            
+        else:
+            # Use the original DataSaver for file-based saving
+            data_saver = DataSaver(
+                base_path=args.output_path,
+                use_s3=args.use_s3,
+                s3_bucket=args.s3_bucket if args.use_s3 else None
+            )
+            
+            # Save the data in requested formats
+            save_results = data_saver.save_data(
+                jobs, 
+                args.search_term, 
+                args.location, 
+                formats=output_formats,
+                timestamp=timestamp
+            )
+            
+            # Report results
+            logger.info(f"Job data saved successfully:")
+            for fmt, path in save_results.items():
+                logger.info(f"  - {fmt.upper()}: {path}")
         
     except Exception as e:
         logger.error(f"Error running scraper: {str(e)}", exc_info=True)

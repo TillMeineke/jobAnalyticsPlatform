@@ -102,10 +102,8 @@ For this project, we've made a cost-conscious decision regarding AWS services:
   - Only pay for ETL job runtime (typically cheaper for batch workloads)
   - Integrates well with both S3 and Athena
   
-- **Cost Compar- Redshift: $0.25-$4.80 per hour per node (24/7) + storage costs
-ison- Redshift: $0.25-$4.80 per hour per node (24/7) + storage costs
-**:
-- Redshift: $0.25-$4.80 per hour per node (24/7) + storage costs
+- **Cost Comparison**:
+  - Redshift: $0.25-$4.80 per hour per node (24/7) + storage costs
   - Glue: ~$0.44 per DPU-hour (only when jobs are running)
   - For our batch pipeline, Glue could be 70-90% cheaper than Redshift
 
@@ -369,6 +367,111 @@ To set up the cloud infrastructure for this project, follow these steps:
    Verify that the resources have been created successfully in the AWS Management Console.
 
 This will set up the S3 buckets, Athena workgroup and databases, and the EC2 instance with Kestra setup.
+
+## Docker Setup 🐳
+
+This project is containerized using Docker to ensure consistent environments across development, testing, and production.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Running with Docker
+
+1. **Build and start the containers:**
+
+```bash
+# Build and start all services in detached mode
+make up
+
+# Or using docker-compose directly
+docker-compose up --build -d
+```
+
+2. **Run just the scraper:**
+
+```bash
+make scrape
+
+# Or using docker-compose directly
+docker-compose run job-scraper
+```
+
+3. **Access Metabase:**
+
+Open your browser and navigate to `http://localhost:3000` to access the Metabase dashboard.
+
+4. **Stop all containers:**
+
+```bash
+make down
+
+# Or using docker-compose directly
+docker-compose down
+```
+
+### Development with Docker
+
+- **Running tests:**
+
+```bash
+make test
+```
+
+- **Code linting and formatting:**
+
+```bash
+make lint
+make format
+```
+
+- **Interactive shell:**
+
+```bash
+docker-compose run --rm job-scraper bash
+```
+
+### Docker Architecture
+
+The Docker setup consists of the following services:
+
+1. **job-scraper**: The main application container that runs the job scraper and data processing
+2. **metabase**: Visualization and analytics dashboard
+3. **postgres**: Database for storing Metabase metadata and configuration
+
+Additional services (commented out in docker-compose.yml):
+
+- **kestra**: For workflow orchestration when needed
+
+## Configuration Files
+
+### DLT Pipeline Configuration 📊
+
+This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
+
+1. Create a `.dlt` directory in the project root (if it doesn't exist):
+   ```bash
+   mkdir -p .dlt
+   ```
+
+2. Copy the example secrets file and modify it for your environment:
+   ```bash
+   cp .dlt/secrets.toml.example .dlt/secrets.toml
+   ```
+
+3. Edit `.dlt/secrets.toml` with your configuration:
+   ```toml
+   [destination.filesystem]
+   bucket_url = "file:///path/to/your/data/folder"
+   ```
+
+   For S3 configuration, uncomment and configure the S3 section:
+   ```toml
+   [destination.s3]
+   bucket_name = "your-s3-bucket-name"
+   region_name = "your-aws-region"
+   ```
 
 ## Project Structure
 
