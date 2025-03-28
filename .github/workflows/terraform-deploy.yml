@@ -1,0 +1,72 @@
+name: Terraform Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/terraform/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "infrastructure/terraform/**"
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infrastructure/terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          TF_VAR_redshift_master_username: ${{ secrets.TF_VAR_REDSHIFT_MASTER_USERNAME }}
+          TF_VAR_redshift_master_password: ${{ secrets.TF_VAR_REDSHIFT_MASTER_PASSWORD }}
+          TF_VAR_environment: ${{ secrets.TF_VAR_ENVIRONMENT }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_redshift_node_type: ${{ secrets.TF_VAR_REDSHIFT_NODE_TYPE }}
+          TF_VAR_redshift_cluster_nodes: ${{ secrets.TF_VAR_REDSHIFT_CLUSTER_NODES }}
+          TF_VAR_s3_bucket_name_prefix: ${{ secrets.TF_VAR_S3_BUCKET_NAME_PREFIX }}
+          TF_VAR_athena_database_name: ${{ secrets.TF_VAR_ATHENA_DATABASE_NAME }}
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          TF_VAR_redshift_master_username: ${{ secrets.TF_VAR_REDSHIFT_MASTER_USERNAME }}
+          TF_VAR_redshift_master_password: ${{ secrets.TF_VAR_REDSHIFT_MASTER_PASSWORD }}
+          TF_VAR_environment: ${{ secrets.TF_VAR_ENVIRONMENT }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_redshift_node_type: ${{ secrets.TF_VAR_REDSHIFT_NODE_TYPE }}
+          TF_VAR_redshift_cluster_nodes: ${{ secrets.TF_VAR_REDSHIFT_CLUSTER_NODES }}
+          TF_VAR_s3_bucket_name_prefix: ${{ secrets.TF_VAR_S3_BUCKET_NAME_PREFIX }}
+          TF_VAR_athena_database_name: ${{ secrets.TF_VAR_ATHENA_DATABASE_NAME }}

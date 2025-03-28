@@ -1,0 +1,50 @@
+# Terraform sensitive files
+*.tfvars
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars.json
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log
+
+# AWS credentials
+.aws/
+aws_credentials
+credentials.csv
+set_env.sh
+set_env.test.sh
+*.test.sh
+
+# Python environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.ipynb_checkpoints
+
+# Other potential secret files
+*.pem
+*.key
+*_rsa
+*id_rsa*
+*.pkcs12
+*.pfx
+*.p12
+*secret*
+*credential*
+*password*
+*token*
