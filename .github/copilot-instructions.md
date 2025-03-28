@@ -24,7 +24,7 @@ After major change or new feature implementation (only one single step at once) 
 - Use make
 - Add CI/CD pipeline
 
-# Coding pattern preferences
+## Coding pattern preferences
 
 - Always prefer simple solutions
 - Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality (DRY principle)
