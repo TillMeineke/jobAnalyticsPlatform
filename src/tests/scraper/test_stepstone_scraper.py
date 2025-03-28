@@ -4,11 +4,17 @@ Tests for the StepstoneScraper class.
 
 import unittest
 from unittest.mock import patch, MagicMock
-
+import os
+import sys
+import json
 import requests
-from bs4 import BeautifulSoup
+
+# Add the root directory to Python path
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+sys.path.insert(0, root_dir)
 
 from src.scraper.stepstone_scraper import StepstoneScraper
+from src.scraper.job_parser import JobParser
 
 
 class TestStepstoneScraper(unittest.TestCase):
@@ -56,12 +62,13 @@ class TestStepstoneScraper(unittest.TestCase):
         # Assert the result
         self.assertIsNone(result)
         
-    @patch("src.scraper.stepstone_scraper.StepstoneScraper._make_request")
     @patch("src.scraper.stepstone_scraper.StepstoneScraper._extract_job_listings")
-    def test_search_jobs(self, mock_extract_listings, mock_make_request):
+    @patch("src.scraper.stepstone_scraper.StepstoneScraper._make_request")
+    def test_search_jobs(self, mock_make_request, mock_extract_listings):
         """Test the search_jobs method."""
         # Setup mocks
         mock_response = MagicMock()
+        mock_response.text = "<html></html>"
         mock_make_request.return_value = mock_response
         
         mock_listings = [

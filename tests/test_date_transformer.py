@@ -1,5 +1,12 @@
 import unittest
 from datetime import datetime, timedelta
+import sys
+import os
+
+# Add the root directory to Python path
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root_dir)
+
 from src.data_processing.date_transformer import DateTransformer
 
 class TestDateTransformer(unittest.TestCase):
