@@ -1,41 +1,60 @@
-.PHONY: build up down test clean lint format
+.PHONY: setup docker-up docker-down scrape upload-s3 dbt-run dbt-test clean
 
-# Docker commands
-build:
-	docker-compose build
+# Default target
+all: help
 
-up:
-	docker-compose up -d
-
-down:
-	docker-compose down
-
-# Development commands
-test:
-	docker-compose run --rm job-scraper python -m pytest tests/
-
-lint:
-	docker-compose run --rm job-scraper flake8 src/ tests/
-
-format:
-	docker-compose run --rm job-scraper black src/ tests/
-
-clean:
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-
-# Data commands
-scrape:
-	docker-compose run --rm job-scraper python src/run_scraper.py
-
-# Help
+# Print help information
 help:
 	@echo "Available commands:"
-	@echo "  make build       - Build Docker images"
-	@echo "  make up          - Start all services"
-	@echo "  make down        - Stop all services"
-	@echo "  make test        - Run tests"
-	@echo "  make lint        - Run linting"
-	@echo "  make format      - Format code with black"
-	@echo "  make clean       - Remove Python cache files"
-	@echo "  make scrape      - Run the job scraper"
+	@echo "  make setup        - Install required dependencies"
+	@echo "  make docker-up    - Start all Docker containers"
+	@echo "  make docker-down  - Stop all Docker containers"
+	@echo "  make scrape       - Run the job scraper"
+	@echo "  make upload-s3    - Upload data to S3"
+	@echo "  make dbt-run      - Run dbt transformations"
+	@echo "  make dbt-test     - Run dbt tests"
+	@echo "  make clean        - Clean temporary files"
+
+# Set up project dependencies
+setup:
+	pip install -r requirements.txt
+	@echo "Creating .dbt profile directory if it doesn't exist"
+	mkdir -p ~/.dbt
+	@if [ ! -f ~/.dbt/profiles.yml ]; then \
+		echo "Creating dbt profiles.yml file"; \
+		cp dbt/profiles.yml.example ~/.dbt/profiles.yml; \
+	else \
+		echo "profiles.yml already exists, not overwriting"; \
+	fi
+
+# Start Docker containers
+docker-up:
+	docker-compose up -d
+
+# Stop Docker containers
+docker-down:
+	docker-compose down
+
+# Run job scraper
+scrape:
+	python src/run_scraper.py
+
+# Upload data to S3
+upload-s3:
+	python src/data_processing/s3_uploader.py
+
+# Run dbt transformations
+dbt-run:
+	cd dbt && dbt run
+
+# Run dbt tests
+dbt-test:
+	cd dbt && dbt test
+
+# Clean temporary files
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+	find . -type f -name ".DS_Store" -delete
+	rm -rf dbt/target
+	rm -rf dbt/logs

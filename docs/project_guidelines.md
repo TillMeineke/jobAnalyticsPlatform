@@ -43,8 +43,8 @@ You can use any of the tools shown in the course (Data Studio or Metabase) or an
 
 Your dashboard should contain at least two tiles, we suggest you include:
 
-- 1 graph that shows the distribution of some categorical data
-- 1 graph that shows the distribution of the data across a temporal line
+* 1 graph that shows the distribution of some categorical data
+* 1 graph that shows the distribution of the data across a temporal line
 
 Ensure that your graph is easy to understand by adding references and titles.
 

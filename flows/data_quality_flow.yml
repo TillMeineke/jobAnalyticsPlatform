@@ -1,85 +1,124 @@
 id: data_quality_flow
 namespace: job_analytics
-revision: 1
+revision: 4
 
 tasks:
   - id: check_data_quality
     type: io.kestra.plugin.scripts.python.Script
     script: |
-      import sys
       import os
-      import json
-      import glob
-      from datetime import datetime
+      import sys
+      import pandas as pd
+      import logging
       
-      # Add project root to path
-      sys.path.append("/app")
-      
-      # Import DLT pipeline components
-      from src.data_processing.dlt_pipeline import JobPipelineConfig, JobDataPipeline
-      
-      def get_latest_job_data():
-          """Find and load the most recent job data file"""
-          data_dir = "/app/data/raw"
-          json_files = glob.glob(f"{data_dir}/*.json")
-          
-          if not json_files:
-              print("No job data files found!")
-              sys.exit(1)
-          
-          # Sort by modification time and get the most recent
-          latest_file = max(json_files, key=os.path.getmtime)
-          print(f"Processing file: {latest_file}")
-          
-          # Load job data
-          with open(latest_file, "r") as f:
-              return json.load(f)
-      
-      # Get the job data
-      job_data = get_latest_job_data()
-      
-      # Initialize DLT pipeline
-      config = JobPipelineConfig(
-          destination="filesystem",
-          dataset_name="job_data",
-          schema_name="bronze"
+      # Set up logging
+      logging.basicConfig(
+          level=logging.INFO,
+          format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
       )
       
-      pipeline = JobDataPipeline(config)
+      # Add current directory to Python path for proper imports
+      sys.path.insert(0, os.getcwd())
       
-      # Check data quality
-      quality_metrics = pipeline.verify_data_quality(job_data)
+      print(f"Current directory: {os.getcwd()}")
+      print(f"Contents: {os.listdir()}")
       
-      # Output metrics as JSON
-      print(json.dumps(quality_metrics, indent=2))
-      
-      # Check if quality meets minimum standards
-      if quality_metrics["complete_data_percentage"] < 60:
-          print(f"WARNING: Complete data percentage is only {quality_metrics['complete_data_percentage']}%, which is below the 60% threshold")
-          sys.exit(1)
+      try:
+          # Find the bronze data directory
+          bronze_dir = "data/raw/bronze"
+          if not os.path.exists(bronze_dir):
+              raise ValueError(f"Directory not found: {bronze_dir}")
+              
+          print(f"Data directory contents: {os.listdir(bronze_dir)}")
           
-      print("Data quality check passed!")
-    docker:
-      image: python:3.11-slim
-      volumes:
-        - /app/src:/app/src
-        - /app/data:/app/data
-        - /app/.dlt:/app/.dlt
+          # Sample data quality checks
+          def run_data_quality_checks():
+              # Find the most recent job data files
+              csv_files = [f for f in os.listdir(bronze_dir) if f.endswith('.csv')]
+              
+              if not csv_files:
+                  print("No CSV files found in bronze directory.")
+                  return False
+              
+              # Get the most recent file based on file name (contains timestamp)
+              most_recent = sorted(csv_files)[-1]
+              print(f"Running data quality checks on: {most_recent}")
+              
+              # Read the CSV file
+              df = pd.read_csv(f"{bronze_dir}/{most_recent}")
+              
+              # Basic data quality checks
+              total_rows = len(df)
+              null_counts = df.isnull().sum()
+              duplicate_count = df.duplicated().sum()
+              
+              print(f"Total rows: {total_rows}")
+              print(f"Null values by column:\n{null_counts}")
+              print(f"Duplicate rows: {duplicate_count}")
+              
+              # Check for expected columns
+              expected_columns = ['job_title', 'company', 'location', 'job_description']
+              missing_columns = [col for col in expected_columns if col not in df.columns]
+              
+              if missing_columns:
+                  print(f"Warning: Missing expected columns: {missing_columns}")
+                  return False
+              else:
+                  print("All expected columns are present.")
+              
+              # Check if we have a minimum number of records
+              if total_rows < 5:
+                  print(f"Warning: Only {total_rows} records found, expected at least 5.")
+                  return False
+                  
+              # Check if job_title column has values (not null or empty)
+              if df['job_title'].isnull().sum() > 0 or (df['job_title'] == "").sum() > 0:
+                  print("Warning: job_title column contains null or empty values.")
+                  return False
+              
+              print("Data quality checks passed successfully.")
+              return True
+          
+          # Run the checks and exit with appropriate code
+          if not run_data_quality_checks():
+              sys.exit(1)
+              
+      except Exception as e:
+          print(f"Error during data quality checks: {str(e)}")
+          import traceback
+          traceback.print_exc()
+          sys.exit(1)
+    containerImage: python:3.11-slim
+    beforeCommands:
+      - pip install pandas>=2.0.0 numpy>=1.24.0 pyarrow>=8.0.0
+    inputFiles:
+      data/raw/bronze: ./data/raw/bronze
+
+  - id: run_dbt_transforms
+    type: io.kestra.plugin.scripts.shell.Commands
+    dependsOn:
+      - check_data_quality
+    commands:
+      - pip install dbt-core dbt-postgres dbt-athena
+      - cd /tmp/kestra-wd && mkdir -p ~/.dbt
+      - cp /tmp/kestra-wd/dbt/profiles.yml.example ~/.dbt/profiles.yml
+      - cd /tmp/kestra-wd/dbt && dbt run --target dev
+    containerImage: python:3.11-slim
+    inputFiles:
+      dbt: ./dbt
 
 triggers:
   - id: schedule
-    type: io.kestra.core.models.triggers.types.Schedule
+    type: io.kestra.plugin.core.trigger.Schedule
     cron: "0 12 * * *"  # Run daily at noon
-
-  - id: after_job_scraping
-    type: io.kestra.core.models.triggers.types.Flow
+  - id: after_scraping
+    type: io.kestra.plugin.core.trigger.Flow
+    flow: job_scraping_flow
+    namespace: job_analytics
     conditions:
-      - type: io.kestra.core.models.conditions.types.ExecutionStatusCondition
+      - type: io.kestra.plugin.core.condition.ExecutionStatusCondition
         in:
           - SUCCESS
-      - type: io.kestra.core.models.conditions.types.FlowCondition
-        namespace: job_analytics
-        flowId: job_scraping_flow
 
 labels:
   owner: data-team

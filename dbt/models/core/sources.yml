@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: job_analytics
+    schema: bronze
+    tables:
+      - name: job_listings
+        description: "Job listings scraped from StepStone"
+        columns:
+          - name: job_title
+            description: "Title of the job posting"
+          - name: company
+            description: "Company offering the job"
+          - name: location
+            description: "Location of the job"
+          - name: job_description
+            description: "Full description of the job"
+          - name: job_url
+            description: "URL of the job posting"
+          - name: date_posted
+            description: "Date the job was posted"
+          - name: salary_min
+            description: "Minimum salary offered"
+          - name: salary_max
+            description: "Maximum salary offered"
+          - name: currency
+            description: "Currency of the salary"
+          - name: job_type
+            description: "Type of job (full-time, part-time, etc.)"
+          - name: extracted_date
+            description: "Date and time the data was extracted"

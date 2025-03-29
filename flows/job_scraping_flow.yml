@@ -1,95 +1,111 @@
 id: job_scraping_flow
 namespace: job_analytics
-revision: 1
+revision: 5
 
 tasks:
-  - id: scrape_stepstone
+  - id: scrape_jobs
     type: io.kestra.plugin.scripts.python.Script
     script: |
-      import sys
       import os
-      
-      # Add project root to path
-      sys.path.append("/app")
-      
-      # Import and run the scraper
-      from src.run_scraper import main
-      
-      # Run the scraper with default parameters
-      main()
-      
-      # Print success message
-      print("Job scraping completed successfully")
-    containerImage: python:3.11-slim
-    inputFiles:
-      src: /app/src
-      data: /app/data
-  
-  - id: process_with_dlt
-    type: io.kestra.plugin.scripts.python.Script
-    runIf: "{{ tasks.scrape_stepstone.status == 'SUCCESS' }}"
-    script: |
       import sys
-      import os
+      import logging
       
-      # Add project root to path
-      sys.path.append("/app")
-      
-      # Import DLT pipeline components
-      from src.data_processing.dlt_pipeline import JobPipelineConfig, JobDataPipeline
-      import json
-      import glob
-      from datetime import datetime
-      
-      # Find the most recent job data files
-      data_dir = "/app/data/raw"
-      json_files = glob.glob(f"{data_dir}/*.json")
-      
-      if not json_files:
-          print("No job data files found!")
-          sys.exit(1)
-      
-      # Sort by modification time and get the most recent
-      latest_file = max(json_files, key=os.path.getmtime)
-      print(f"Processing file: {latest_file}")
-      
-      # Load job data
-      with open(latest_file, "r") as f:
-          job_data = json.load(f)
-      
-      # Get metadata from filename
-      filename = os.path.basename(latest_file)
-      parts = filename.split("_")
-      search_term = parts[0].replace("-", " ")
-      location = parts[1]
-      
-      # Create metadata
-      metadata = {
-          "search_term": search_term,
-          "location": location,
-          "timestamp": datetime.now().isoformat(),
-          "source": "stepstone"
-      }
-      
-      # Initialize DLT pipeline
-      config = JobPipelineConfig(
-          destination="filesystem",
-          dataset_name="job_data",
-          schema_name="bronze"
+      # Set up logging
+      logging.basicConfig(
+          level=logging.INFO,
+          format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
       )
       
-      pipeline = JobDataPipeline(config)
+      # Print environment and debug info
+      print(f"Current working directory: {os.getcwd()}")
+      print(f"Python version: {sys.version}")
+      print(f"Directory contents: {os.listdir()}")
       
-      # Process the job data
-      info = pipeline.process_jobs(job_data, metadata)
+      # Add source directories to Python path for proper imports
+      sys.path.insert(0, os.getcwd())
       
-      print(f"DLT processing complete: {info}")
+      try:
+          # Import the run_scraper module
+          from src.run_scraper import main
+          
+          # Run the main function
+          print("Starting job scraping")
+          main()
+          print("Job scraping completed successfully")
+      except Exception as e:
+          print(f"Error during scraping: {str(e)}")
+          import traceback
+          traceback.print_exc()
+          sys.exit(1)
     containerImage: python:3.11-slim
+    beforeCommands:
+      - pip install beautifulsoup4>=4.11.0 lxml numpy>=1.24.0 pandas>=2.0.0 requests>=2.28.0 pyarrow>=8.0.0 dlt>=0.3.0 boto3>=1.26.0 python-dotenv>=1.0.0
     inputFiles:
-      src: /app/src
-      data: /app/data
-      dlt: /app/.dlt
-
+      src/run_scraper.py: ./src/run_scraper.py
+      src/scraper/__init__.py: ./src/scraper/__init__.py
+      src/scraper/job_parser.py: ./src/scraper/job_parser.py
+      src/scraper/stepstone_scraper.py: ./src/scraper/stepstone_scraper.py
+      src/scraper/utils/__init__.py: ./src/scraper/utils/__init__.py
+      src/data_processing/__init__.py: ./src/data_processing/__init__.py
+      src/data_processing/data_saver.py: ./src/data_processing/data_saver.py
+      src/data_processing/dlt_pipeline.py: ./src/data_processing/dlt_pipeline.py
+      src/data_processing/date_transformer.py: ./src/data_processing/date_transformer.py
+      src/data_processing/job_data_processor.py: ./src/data_processing/job_data_processor.py
+      src/data_processing/s3_uploader.py: ./src/data_processing/s3_uploader.py
+      src/config/__init__.py: ./src/config/__init__.py
+      src/config/config.py: ./src/config/config.py
+      src/__init__.py: |
+        """
+        Job Analytics Platform package.
+        """
+      data: ./data
+      .dlt: ./.dlt
+      
+  - id: upload_to_s3
+    type: io.kestra.plugin.scripts.python.Script
+    dependsOn:
+      - scrape_jobs
+    script: |
+      import os
+      import sys
+      import logging
+      
+      # Set up logging
+      logging.basicConfig(
+          level=logging.INFO,
+          format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      )
+      
+      # Add source directories to Python path for proper imports
+      sys.path.insert(0, os.getcwd())
+      
+      try:
+          # Import S3Uploader
+          from src.data_processing.s3_uploader import S3Uploader
+          
+          # Get bucket name from environment variable or use default
+          bucket_name = os.environ.get("S3_BUCKET_NAME", "job-analytics-data")
+          
+          # Create uploader and upload bronze data
+          print(f"Starting upload to S3 bucket: {bucket_name}")
+          uploader = S3Uploader(bucket_name)
+          uploaded_files = uploader.upload_bronze_data()
+          
+          print(f"Uploaded {uploaded_files} files to S3 bucket: {bucket_name}")
+      except Exception as e:
+          print(f"Error during S3 upload: {str(e)}")
+          import traceback
+          traceback.print_exc()
+          sys.exit(1)
+    containerImage: python:3.11-slim
+    beforeCommands:
+      - pip install boto3>=1.26.0 python-dotenv>=1.0.0
+    inputFiles:
+      src/data_processing/s3_uploader.py: ./src/data_processing/s3_uploader.py
+      src/data_processing/__init__.py: ./src/data_processing/__init__.py
+      src/__init__.py: ./src/__init__.py
+      data/raw/bronze: ./data/raw/bronze
+      
 triggers:
   - id: schedule
     type: io.kestra.plugin.core.trigger.Schedule

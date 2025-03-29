@@ -1,59 +1,48 @@
-# Workflow Definitions 📊
+# 🔄 Kestra Workflows
 
-This directory contains Kestra workflow definitions that orchestrate our data pipelines.
+This directory contains the workflow definitions for the Kestra orchestration platform. These workflows coordinate the job scraping, data quality checks, and dbt transformations.
 
-## Available Workflows
+## 📄 Workflow Files
 
-### 1. Job Scraping Flow (`job_scraping_flow.yml`)
+### 🔍 `job_scraping_flow.yml`
 
-This workflow automates the process of scraping job postings and loading them into our data pipeline:
+This workflow handles the job data scraping process:
 
-- **Tasks**:
-  - `scrape_stepstone`: Runs the Stepstone scraper to collect job listings
-  - `process_with_dlt`: Processes the collected data using the DLT pipeline
+1. **Scrape Jobs Task**: Runs the Python scraping code to collect job listings
+2. **Upload to S3 Task**: Uploads collected data to AWS S3 for storage
 
-- **Trigger**: Scheduled to run daily at midnight (cron: `0 0 * * *`)
+Scheduled to run daily at midnight.
 
-- **Labels**:
-  - `owner`: data-team
-  - `priority`: high
+### 📊 `data_quality_flow.yml`
 
-### 2. Data Quality Flow (`data_quality_flow.yml`)
+This workflow handles data quality checks and transformations:
 
-This workflow monitors the quality of our job data:
+1. **Check Data Quality Task**: Validates the scraped job data for completeness and quality
+2. **Run dbt Transforms Task**: Executes dbt models to transform the validated data
 
-- **Tasks**:
-  - `check_data_quality`: Analyzes job data for completeness, accuracy and consistency
+Triggered either:
 
-- **Triggers**:
-  - Scheduled to run daily at noon (cron: `0 12 * * *`)
-  - Runs automatically after a successful execution of the Job Scraping Flow
+- On a schedule (daily at noon)
+- After successful completion of the job_scraping_flow
 
-- **Labels**:
-  - `owner`: data-team
-  - `priority`: medium
+## 🔄 Execution
 
-## Workflow Structure
+These workflows are automatically executed by Kestra based on their schedules or triggers. You can also manually execute them through the Kestra UI (<http://localhost:8080/ui/executions>).
 
-Each workflow definition includes:
+## 🛠️ Development
 
-- **id**: Unique identifier for the workflow
-- **namespace**: Logical grouping (all workflows use `job_analytics`)
-- **tasks**: The individual steps to execute
-- **triggers**: When/how the workflow should be started
-- **labels**: Metadata for organization and filtering
+To modify these workflows:
 
-## Running Workflows
+1. Edit the corresponding YAML file
+2. Validate the workflow syntax
+3. Upload to Kestra via the UI or API
 
-Workflows can be executed:
+## 🔗 Integration Points
 
-1. **Automatically** via their defined schedule or trigger conditions
-2. **Manually** through the Kestra UI at <http://localhost:8080>
-3. **Programmatically** via the Kestra API
+These workflows connect with:
 
-## Adding New Workflows
-
-To add a new workflow:
-
-1. Create a YAML file in this directory following Kestra's flow syntax
-2. Deploy it via the Kestra UI or by restarting the containers
+- **Job Scraper** (Python): Collects raw job data
+- **S3 Storage**: Persists data in the cloud
+- **Data Quality Checks**: Validates data integrity
+- **dbt Transformations**: Converts raw data into analytics-ready models
+- **Metabase**: Front-end visualization (final output destination)

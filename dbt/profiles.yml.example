@@ -1,0 +1,20 @@
+job_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: jobanalytics
+      password: jobanalytics
+      dbname: jobanalytics
+      schema: public
+      threads: 4
+    prod:
+      type: athena
+      s3_staging_dir: s3://job-analytics-data/dbt-athena-staging/
+      region_name: eu-central-1
+      schema: gold
+      database: job_analytics
+      threads: 4
+      work_group: primary

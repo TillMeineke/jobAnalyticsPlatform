@@ -19,7 +19,7 @@ kestra:
   storage:
     type: local
     local:
-      basePath: "/app/storage"
+      basePath: "/kestra/storage"
     
   # Repository configuration
   repository:
@@ -46,3 +46,8 @@ kestra:
   # Disable tutorial flows
   tutorialFlows:
     enabled: false
+    
+  # Temp directory configuration 
+  tasks:
+    tmpDir:
+      path: "/kestra/tmp"

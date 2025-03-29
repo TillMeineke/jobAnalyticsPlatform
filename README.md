@@ -438,11 +438,37 @@ The Docker setup consists of the following services:
 
 1. **job-scraper**: The main application container that runs the job scraper and data processing
 2. **metabase**: Visualization and analytics dashboard
-3. **postgres**: Database for storing Metabase metadata and configuration
+3. **postgres**: Database for storing job data, Metabase metadata, and Kestra state
+4. **kestra**: For workflow orchestration
+5. **pgadmin**: PostgreSQL administration tool
 
-Additional services (commented out in docker-compose.yml):
+### Kestra Workflow Orchestration Setup ⚙️
 
-- **kestra**: For workflow orchestration when needed
+Kestra orchestrates all workflows in this project. To properly use Kestra:
+
+1. **Start All Services:**
+
+```bash
+make docker-up
+
+# Or using docker-compose directly
+docker-compose up -d
+```
+
+2. **Access Kestra UI:**
+Open your browser and navigate to `http://localhost:8080` to access the Kestra UI.
+Default login credentials:
+
+- Username: <admin@kestra.io>
+- Password: admin
+
+3. **Available Workflows:**
+   - `job_scraping_flow`: Scrapes job data and uploads to S3
+   - `data_quality_flow`: Performs data quality checks and runs dbt transformations
+
+4. **Troubleshooting Kestra Issues:**
+   - Check container logs: `docker-compose logs kestra`
+   - Verify PostgreSQL container is healthy: `docker-compose ps`
 
 ## Configuration Files
 
@@ -483,43 +509,50 @@ This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
 .
 ├── data
 │   ├── raw        # Bronze layer - raw data as collected
-│   ├── processed  # Silver layer - cleaned and processed data
-│   └── analytics  # Gold layer - analytics-ready data
-├── src
-│   ├── data_processing  # Code for data transformation
-│   ├── data_collection  # Code for collecting data
-│   └── analytics        # Code for analysis and insights
-├── scripts             # Executable scripts
-└── tests               # Unit tests
+│   │   ├── bronze # Job data CSV/JSON/Parquet files
+│   │   └── test_job_data # Test data for development
+├── dbt            # dbt transformation models
+│   ├── models     # SQL transformation models
+│   │   └── core   # Core transformation logic
+│   ├── analyses   # Ad-hoc analytical queries
+│   ├── macros     # Reusable SQL functions
+│   ├── seeds      # Static reference data
+│   └── tests      # Data quality tests
+├── flows          # Kestra workflow definitions
+├── src            # Source code
+│   ├── config     # Configuration settings
+│   ├── data_processing # Data transformation logic
+│   ├── scraper    # Web scraping modules
+├── scripts        # Utility scripts
+├── tests          # Unit and integration tests
+└── docker-compose.yml # Docker services configuration
 ```
 
 ## Implementation Status
 
-### 1. Data Collection (🟡 In Progress)
+### 1. Data Collection (🟢 Implemented)
 
 - [x] Created the scraper module structure
 - [x] Implemented `StepstoneScraper` for extracting job listings
 - [x] Built `JobParser` for structured data extraction
 - [x] Added unit tests for scraper components
-- [ ] Implement data saving functionality
-- [ ] Add support for other job portals
+- [x] Implemented data saving functionality
+- [x] Added S3 upload capabilities
 
 ### 2. Data Storage (🟢 Configured)
 
-- [x] Created S3 buckets in Terraform
-- [x] Configured folder structure for bronze data layer
 - [x] Implemented dlt pipeline for structured ingestion
 - [x] Added filesystem destination support for local development
 - [x] Configured S3 destination for cloud deployment
-- [ ] Set up data validation
+- [x] Added S3 upload functionality
 
-### 3. Data Processing (🟡 In Progress)
+### 3. Data Processing (🟢 Implemented)
 
 - [x] Created job data enrichment functionality
 - [x] Implemented data quality verification metrics
-- [ ] Create dbt models for transformations
-- [ ] Implement standardization logic
-- [ ] Build analytics views
+- [x] Created dbt models for data transformations
+- [x] Implemented standardization logic for job data
+- [x] Built analytics views for job categories and tech skills
 
 ### 4. Orchestration (🟢 Configured)
 
@@ -527,11 +560,11 @@ This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
 - [x] Set up job scraping workflow
 - [x] Set up data quality workflow
 - [x] Added scheduling and dependency management
-- [x] Configured Docker services for Kestra
+- [x] Consolidated Docker services into a single docker-compose.yml
 
-### 5. Visualization (🔴 Not Started)
+### 5. Visualization (🟡 In Progress)
 
-- [ ] Configure Metabase instance
+- [x] Configured Metabase instance
 - [ ] Create dashboards for job market insights
 
 ### Module Documentation
@@ -539,6 +572,23 @@ This project uses DLT (Data Load Tool) for data ingestion. To configure DLT:
 Each major component of the project has its own README for more detailed documentation:
 
 - [Scraper Module](/src/scraper/README.md) - Web scraper implementation
+- [DBT Transformations](/dbt/README.md) - Data transformation details
+- [Kestra Workflows](/flows/README.md) - Workflow orchestration details
+
+## Recent Improvements
+
+- Consolidated Docker Compose configurations into a single file for easier management
+- Fixed Kestra configuration to disable tutorial flows and properly load custom workflows
+- Added S3 upload functionality for persistent storage of job data
+- Implemented dbt models for transforming job data into analytics-ready tables
+- Created comprehensive documentation for each major component
+
+## Next Steps
+
+- Create Metabase dashboards for job market insights
+- Implement additional job portal integrations
+- Set up CI/CD pipeline for automated testing and deployment
+- Add notifications for pipeline failures
 
 ## Security Best Practices
 
