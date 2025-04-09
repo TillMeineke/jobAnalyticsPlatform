@@ -48,3 +48,8 @@ venv.bak/
 *credential*
 *password*
 *token*
+
+# data folders
+data/*.csv
+data/*.json
+data/*.parquet
