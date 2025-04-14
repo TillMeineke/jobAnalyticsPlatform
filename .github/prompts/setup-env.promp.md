@@ -4,9 +4,7 @@ My first request is to help setup my local and remote (aws) development environm
 
 ## Rules
 
-- conda if possible
-- python 3.12
-- jupyter
+- python
 - vscode
 - git
 - docker
