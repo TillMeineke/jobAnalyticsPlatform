@@ -35,8 +35,15 @@ The project follows a clear folder structure:
 
 - `01_local/` - Local development environment (Docker-based)
 - `02_cloud/` - AWS cloud deployment (Terraform)
-- `src/` - Shared source code for scrapers and utilities
 - `docs/` - Project documentation
+
+# Folder Structure Guidelines
+
+- Keep code organization clean and avoid duplication
+- Only duplicate code between local (01_local) and cloud (02_cloud) environments
+- Use clear folder names without duplicates (e.g., no scrapers/scraper)
+- Each folder should have its own README.md
+- Main README.md should link to subfolder documentation
 
 # User Journey (Data Pipeline Focus)
 

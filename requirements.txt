@@ -10,6 +10,7 @@ requests
 beautifulsoup4
 selenium
 webdriver-manager
+colorlog
 
 # Data processing
 dbt-core
@@ -24,6 +25,7 @@ python-dotenv
 pydantic
 tqdm
 click
+
 
 # AWS
 boto3

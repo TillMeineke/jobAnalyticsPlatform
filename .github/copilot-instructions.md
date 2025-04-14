@@ -31,9 +31,11 @@ After major changes or new feature implementations (only one single step at a ti
 - Keep the codebase clean and organized.
 - Always update the README.md file with changes made to the codebase.
 - Create README.md files in subdirectories if they don't exist, and link them in the main README.md file. Use emojis to make documentation more engaging.
+- Do not create a cleaner structure with a single src directory at the project root level.
 - Add comments and docstrings to explain non-obvious code.
 - Avoid writing scripts in files unless they are reusable.
 - Refactor files exceeding 200-300 lines of code.
+- Before moving folders (and content), check if files already exist in the target folder. If they do, consider merging them instead of moving.
 - Use mock data only for tests, never for dev or prod.
 - Never override the `.env` file without confirmation.
 

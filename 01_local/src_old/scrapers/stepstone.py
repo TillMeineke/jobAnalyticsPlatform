@@ -257,77 +257,115 @@ class StepStoneScraper:
         else:
             return processed_jobs, all_related_terms
 
+    def _extract_total_jobs(self) -> int:
+        """Extract the total number of jobs found."""
+        try:
+            # Wait for the element to be present
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-testid='found-jobs-count']")
+                )
+            )
+            total_element = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='found-jobs-count']"
+            )
+            total_text = total_element.text
+            # Extract number from text like "1.251 Treffer"
+            return int(total_text.split()[0].replace(".", ""))
+        except Exception as e:
+            logger.warning(f"Could not extract total jobs count: {e}")
+            return 0
+
     def _parse_search_results(
         self,
     ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
-        """Parse the search results page.
-
-        Returns:
-            A tuple containing:
-                - A list of job listings dictionaries
-                - A list of related job terms dictionaries
-        """
+        """Parse the search results page."""
         jobs = []
         page = 1
         total_jobs = 0
         start_time = time.time()
 
+        # Get total number of jobs first
+        total_available_jobs = self._extract_total_jobs()
+        logger.info(f"Total jobs available: {total_available_jobs}")
+
         while True:
-            # Get job listings on current page
+            # Wait for job listings to load
             try:
-                job_listings = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_all_elements_located(
-                        (By.CSS_SELECTOR, "article[data-testid='job-item']")
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "[data-testid='job-item']")
                     )
                 )
-            except TimeoutException:
-                logger.warning("No job listings found or timeout")
-                break
+                time.sleep(1)  # Small delay to ensure all items are loaded
 
-            logger.info(f"Found {len(job_listings)} job listings on page {page}")
+                job_listings = self.driver.find_elements(
+                    By.CSS_SELECTOR, "[data-testid='job-item']"
+                )
 
-            for job_element in job_listings:
+                if not job_listings:
+                    logger.warning("No job listings found on current page")
+                    break
+
+                logger.info(f"Found {len(job_listings)} job listings on page {page}")
+
+                for job_element in job_listings:
+                    try:
+                        job = self._extract_job_info(job_element)
+                        jobs.append(job)
+                        total_jobs += 1
+
+                        if total_jobs >= self.max_results:
+                            logger.info(
+                                f"Reached maximum number of results: {self.max_results}"
+                            )
+                            break
+                    except Exception as e:
+                        logger.error(f"Error extracting job info: {e}")
+                        continue
+
+                if total_jobs >= self.max_results:
+                    break
+
+                # Check runtime
+                if (
+                    self.max_runtime_seconds
+                    and (time.time() - start_time) > self.max_runtime_seconds
+                ):
+                    logger.info(
+                        f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                    )
+                    break
+
+                # Try to go to next page
                 try:
-                    job = self._extract_job_info(job_element)
-                    jobs.append(job)
-                    total_jobs += 1
-
-                    # Check if we've reached the maximum number of results
-                    if total_jobs >= self.max_results:
-                        logger.info(
-                            f"Reached maximum number of results: {self.max_results}"
+                    next_button = WebDriverWait(self.driver, 5).until(
+                        EC.presence_of_element_located(
+                            (
+                                By.CSS_SELECTOR,
+                                "[data-testid='next-page-button']:not([disabled])",
+                            )
                         )
-                        break
+                    )
+                    self.driver.execute_script(
+                        "arguments[0].scrollIntoView(true);", next_button
+                    )
+                    time.sleep(0.5)
+                    next_button.click()
+                    page += 1
+                    time.sleep(2)  # Wait for new page to load
+                except TimeoutException:
+                    logger.info("No more pages available")
+                    break
                 except Exception as e:
-                    logger.error(f"Error extracting job info: {e}")
+                    logger.error(f"Error navigating to next page: {e}")
+                    break
 
-            # Check if we need to stop due to limits
-            if total_jobs >= self.max_results:
-                break
-
-            # Check if we exceeded max runtime
-            if (
-                self.max_runtime_seconds
-                and (time.time() - start_time) > self.max_runtime_seconds
-            ):
-                logger.info(
-                    f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
-                )
-                break
-
-            # Try to go to next page
-            try:
-                next_button = self.driver.find_element(
-                    By.CSS_SELECTOR, "[data-testid='next-button']:not([disabled])"
-                )
-                next_button.click()
-                page += 1
-                time.sleep(1)  # Wait for page to load
-            except NoSuchElementException:
-                logger.info("No more pages available")
+            except TimeoutException:
+                logger.warning("Timeout waiting for job listings")
                 break
             except Exception as e:
-                logger.error(f"Error navigating to next page: {e}")
+                logger.error(f"Error parsing search results: {e}")
                 break
 
         # Extract related search terms
@@ -434,6 +472,104 @@ class StepStoneScraper:
 
         return related_terms
 
+    def _extract_job_details(self, job_card):
+        """Extract detailed information from a job card."""
+        try:
+            title = job_card.find_element(
+                By.CSS_SELECTOR, "[data-at='job-item-title']"
+            ).text
+            company = job_card.find_element(
+                By.CSS_SELECTOR, "[data-at='job-item-company-name']"
+            ).text
+            location = job_card.find_element(
+                By.CSS_SELECTOR, "[data-at='job-item-location']"
+            ).text
+
+            # Get the job link
+            link = job_card.find_element(
+                By.CSS_SELECTOR, "a[data-at='job-item-title']"
+            ).get_attribute("href")
+
+            # Try to get salary if available
+            try:
+                salary = job_card.find_element(
+                    By.CSS_SELECTOR, "[data-at='job-item-salary-info']"
+                ).text
+            except NoSuchElementException:
+                salary = "Not specified"
+
+            # Try to get posting date
+            try:
+                posted = job_card.find_element(
+                    By.CSS_SELECTOR, "[data-at='job-item-timeago']"
+                ).text
+            except NoSuchElementException:
+                posted = "Not specified"
+
+            return {
+                "title": title,
+                "company": company,
+                "location": location,
+                "salary": salary,
+                "posted": posted,
+                "link": link,
+            }
+        except Exception as e:
+            logger.error(f"Error extracting job details: {str(e)}")
+            return None
+
+    def scrape(self):
+        """Main scraping method."""
+        jobs_found = []
+        for page in range(1, self.max_results + 1):
+            try:
+                job_cards = self.driver.find_elements(
+                    By.CSS_SELECTOR, "[data-at='job-item']"
+                )
+                logger.info(f"Found {len(job_cards)} job listings on page {page}")
+
+                # Process first_n and last_n if specified
+                if self.first_n or self.last_n:
+                    if self.first_n:
+                        first_cards = job_cards[: self.first_n]
+                        for card in first_cards:
+                            details = self._extract_job_details(card)
+                            if details:
+                                jobs_found.append(details)
+
+                    if self.last_n:
+                        last_cards = job_cards[-self.last_n :]
+                        for card in last_cards:
+                            details = self._extract_job_details(card)
+                            if details:
+                                jobs_found.append(details)
+                else:
+                    for card in job_cards:
+                        details = self._extract_job_details(card)
+                        if details:
+                            jobs_found.append(details)
+
+            except Exception as e:
+                logger.error(f"Error on page {page}: {str(e)}")
+                break
+
+        logger.info(
+            f"\nFound {len(jobs_found)} jobs for '{self.job_title}' in '{self.location}'"
+        )
+        print(f"\nRetrieved details for {len(jobs_found)} jobs")
+
+        # Print detailed job information
+        for job in jobs_found:
+            print("\n-------------------")
+            print(f"Title: {job['title']}")
+            print(f"Company: {job['company']}")
+            print(f"Location: {job['location']}")
+            print(f"Salary: {job['salary']}")
+            print(f"Posted: {job['posted']}")
+            print(f"Link: {job['link']}")
+
+        return jobs_found
+
     def get_job_details(self, job_id: str) -> Dict[str, Any]:
         """Get detailed information about a job listing.
 
@@ -485,7 +621,8 @@ class StepStoneScraper:
         try:
             job_details["location"] = self.driver.find_element(
                 By.CSS_SELECTOR, "[data-testid='job-detail-location']"
-            ).text.strip()
+            )
+            job_details["location"] = job_details["location"].text.strip()
         except NoSuchElementException:
             job_details["location"] = "Unknown Location"
 
