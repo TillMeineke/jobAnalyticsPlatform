@@ -1,11 +1,13 @@
 # Job Analytics Platform - Project Plan
 
 ## Overview
+
 The Job Analytics Platform aims to collect, analyze, and visualize job market data from various sources like LinkedIn, providing insights into job trends, skills demand, and market opportunities.
 
 ## Project Phases
 
 ### Phase 1: Data Collection Infrastructure
+
 - **LinkedIn Job Scraper Implementation**
   - Configure search parameters for job retrieval
   - Set up job listing collection (based on existing search_retriever.py)
@@ -13,6 +15,7 @@ The Job Analytics Platform aims to collect, analyze, and visualize job market da
   - Build robust storage mechanism using SQLite
 
 ### Phase 2: Data Processing Pipeline
+
 - **Data Cleaning and Transformation**
   - Normalize job titles and descriptions
   - Extract key information (skills, requirements, benefits)
@@ -23,6 +26,7 @@ The Job Analytics Platform aims to collect, analyze, and visualize job market da
   - Company information lookup
 
 ### Phase 3: Analytics Engine
+
 - **Basic Analytics Implementation**
   - Job count by location/industry/role
   - Trending skills and requirements
@@ -33,6 +37,7 @@ The Job Analytics Platform aims to collect, analyze, and visualize job market da
   - Market opportunity identification
 
 ### Phase 4: Visualization and Reporting
+
 - **Dashboard Development**
   - Interactive charts and graphs
   - Filtering capabilities
@@ -42,12 +47,14 @@ The Job Analytics Platform aims to collect, analyze, and visualize job market da
   - Query capabilities for custom analysis
 
 ## Timeline
+
 - Phase 1: 2-3 weeks
 - Phase 2: 2-3 weeks
 - Phase 3: 3-4 weeks
 - Phase 4: 2-3 weeks
 
 ## Next Steps (Immediate Priorities)
+
 1. Complete the data collection infrastructure by implementing any missing components
 2. Set up automated data collection processes
 3. Begin developing the data cleaning and transformation pipeline
@@ -55,6 +62,7 @@ The Job Analytics Platform aims to collect, analyze, and visualize job market da
 5. Design dashboard mockups
 
 ## Technical Stack
+
 - **Data Collection**: Python, Selenium/Beautiful Soup
 - **Database**: SQLite (initial), potential migration to PostgreSQL
 - **Backend**: Python, Flask/FastAPI
