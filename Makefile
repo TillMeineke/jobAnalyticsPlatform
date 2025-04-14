@@ -1,4 +1,4 @@
-.PHONY: setup-local setup-cloud run-local run-cloud test-local test-cloud clean-local clean-cloud init-db run-pipeline validate-cloud estimate-cost all test-scraper
+.PHONY: setup-local setup-cloud run-local run-cloud test-local test-cloud clean-local clean-cloud init-db run-pipeline validate-cloud estimate-cost all test-scraper test-scraper-detail test-scraper-asc test-scraper-limit install setup-geckodriver
 
 # Default target
 all: setup-local
@@ -29,21 +29,18 @@ run-pipeline:
 	# This will be implemented later
 
 # Test specific components
-test-scraper:
+test-scraper: setup-geckodriver
 	@echo "Testing StepStone scraper with Data Engineer in Hamburg..."
 	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort desc
 
-test-scraper-detail:
-	@echo "Testing StepStone scraper with first 5 and last 5 job details..."
-	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort desc --first-n 5 --last-n 5
+test-scraper-detail: setup-geckodriver
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --first-n 5 --last-n 5 --headless
 
-test-scraper-asc:
-	@echo "Testing StepStone scraper with ascending sort order..."
+test-scraper-asc: setup-geckodriver
 	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort asc
 
-test-scraper-limit:
-	@echo "Testing StepStone scraper with runtime limit (30 seconds)..."
-	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 100 --headless --max-runtime 30
+test-scraper-limit: setup-geckodriver
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-runtime 30 --headless
 
 # Cloud environment commands
 setup-cloud:
@@ -70,6 +67,23 @@ estimate-cost:
 	@echo "Estimating AWS costs..."
 	# This will be implemented later
 
+install:
+	pip install -r requirements.txt
+
+setup-geckodriver:
+	# Check the OS and download appropriate geckodriver
+	@if [ "$$(uname)" = "Darwin" ]; then \
+		echo "Downloading geckodriver for MacOS..."; \
+		wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-macos.tar.gz -O /tmp/geckodriver.tar.gz; \
+	else \
+		echo "Downloading geckodriver for Linux..."; \
+		wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz; \
+	fi
+	tar -xzf /tmp/geckodriver.tar.gz -C /tmp/
+	chmod +x /tmp/geckodriver
+	sudo mv /tmp/geckodriver /usr/local/bin/
+	rm /tmp/geckodriver.tar.gz
+
 # Help command
 help:
 	@echo "Available commands:"
@@ -89,3 +103,5 @@ help:
 	@echo "  clean-cloud       - Destroy cloud resources"
 	@echo "  validate-cloud    - Validate cloud deployment"
 	@echo "  estimate-cost     - Estimate AWS costs"
+	@echo "  install           - Install Python dependencies"
+	@echo "  setup-geckodriver - Set up geckodriver for web scraping"
