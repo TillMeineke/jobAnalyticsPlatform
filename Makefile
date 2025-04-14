@@ -31,7 +31,19 @@ run-pipeline:
 # Test specific components
 test-scraper:
 	@echo "Testing StepStone scraper with Data Engineer in Hamburg..."
-	python -m src.tests.test_stepstone_scraper
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort desc
+
+test-scraper-detail:
+	@echo "Testing StepStone scraper with first 5 and last 5 job details..."
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort desc --first-n 5 --last-n 5
+
+test-scraper-asc:
+	@echo "Testing StepStone scraper with ascending sort order..."
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 25 --headless --sort asc
+
+test-scraper-limit:
+	@echo "Testing StepStone scraper with runtime limit (30 seconds)..."
+	python -m src.scrapers.stepstone --job-title "Data Engineer" --location "Hamburg" --max-results 100 --headless --max-runtime 30
 
 # Cloud environment commands
 setup-cloud:
@@ -61,16 +73,19 @@ estimate-cost:
 # Help command
 help:
 	@echo "Available commands:"
-	@echo "  setup-local     - Set up local development environment"
-	@echo "  run-local       - Start local services"
-	@echo "  test-local      - Run tests for local environment"
-	@echo "  test-scraper    - Test the StepStone scraper with specific search terms"
-	@echo "  clean-local     - Clean local environment"
-	@echo "  init-db         - Initialize database schemas"
-	@echo "  run-pipeline    - Run data pipeline"
-	@echo "  setup-cloud     - Set up cloud environment"
-	@echo "  run-cloud       - Deploy to cloud"
-	@echo "  test-cloud      - Run tests for cloud environment"
-	@echo "  clean-cloud     - Destroy cloud resources"
-	@echo "  validate-cloud  - Validate cloud deployment"
-	@echo "  estimate-cost   - Estimate AWS costs"
+	@echo "  setup-local       - Set up local development environment"
+	@echo "  run-local         - Start local services"
+	@echo "  test-local        - Run tests for local environment"
+	@echo "  test-scraper      - Test the StepStone scraper with Data Engineer in Hamburg"
+	@echo "  test-scraper-detail - Test the scraper with first and last 5 job details"
+	@echo "  test-scraper-asc  - Test the scraper with ascending sort order"
+	@echo "  test-scraper-limit - Test the scraper with runtime limit"
+	@echo "  clean-local       - Clean local environment"
+	@echo "  init-db           - Initialize database schemas"
+	@echo "  run-pipeline      - Run data pipeline"
+	@echo "  setup-cloud       - Set up cloud environment"
+	@echo "  run-cloud         - Deploy to cloud"
+	@echo "  test-cloud        - Run tests for cloud environment"
+	@echo "  clean-cloud       - Destroy cloud resources"
+	@echo "  validate-cloud    - Validate cloud deployment"
+	@echo "  estimate-cost     - Estimate AWS costs"

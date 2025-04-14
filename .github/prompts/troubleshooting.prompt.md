@@ -123,3 +123,28 @@ python -m src.tests.test_stepstone_scraper
 ```bash
 pytest -v src/tests/test_stepstone_scraper.py
 ```
+
+## Debugging Enhancements
+
+### Enhanced Logging
+
+**Solution**:
+
+Use `pprint` for structured output and color-coded logs for better debugging:
+
+```python
+from pprint import pprint
+from termcolor import colored
+
+# Example usage
+pprint(data)
+print(colored("[ERROR] Critical issue encountered", "red"))
+print(colored("[WARNING] Potential issue detected", "yellow"))
+print(colored("[INFO] Operation successful", "green"))
+```
+
+### Debugging Steps
+
+1. Inspect logs for color-coded messages.
+2. Use `pprint` to print structured data for easier inspection.
+3. Verify extracted data against the webpage manually.

@@ -1,20 +1,19 @@
 """StepStone job scraper implementation."""
 
-import datetime
 import logging
+import os
 import time
-from typing import Dict, List, Optional
+import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import quote
 
-from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.firefox import GeckoDriverManager
-
-from src.scrapers.base import BaseScraper
 
 # Configure logging
 logging.basicConfig(
@@ -23,565 +22,610 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class StepStoneScraper(BaseScraper):
-    """StepStone job platform scraper."""
+class StepStoneScraper:
+    """StepStone job scraper class."""
 
     BASE_URL = "https://www.stepstone.de"
     SEARCH_URL = f"{BASE_URL}/jobs"
+    LOGIN_URL = f"{BASE_URL}/5/login"
 
     def __init__(
-        self, max_results: int = 100, days_back: int = 30, headless: bool = True
+        self,
+        max_results: int = 100,
+        headless: bool = True,
+        login: bool = False,
+        max_runtime_seconds: Optional[int] = None,
+        sort_order: str = "desc",
     ):
         """Initialize the StepStone scraper.
 
         Args:
-            max_results: Maximum number of job listings to fetch
-            days_back: How far back to search (in days)
+            max_results: Maximum number of job listings to scrape
             headless: Whether to run the browser in headless mode
+            login: Whether to login to StepStone
+            max_runtime_seconds: Maximum runtime in seconds before stopping
+            sort_order: Sort order for job listings ('asc' or 'desc' by date)
         """
-        super().__init__(max_results=max_results, days_back=days_back)
+        self.max_results = max_results
         self.headless = headless
-        self._setup_browser()
+        self.should_login = login
+        self.max_runtime_seconds = max_runtime_seconds
+        self.sort_order = sort_order.lower()
 
-    def _setup_browser(self):
-        """Set up the Firefox/Gecko browser for scraping."""
+        if self.sort_order not in ["asc", "desc"]:
+            logger.warning(f"Invalid sort_order: {sort_order}, defaulting to 'desc'")
+            self.sort_order = "desc"
+
+        self.driver = self._setup_driver()
+
+        if self.should_login:
+            self._login()
+
+    def _setup_driver(self) -> webdriver.Firefox:
+        """Set up the Firefox web driver.
+
+        Returns:
+            A configured Firefox web driver instance
+        """
         firefox_options = FirefoxOptions()
         if self.headless:
             firefox_options.add_argument("--headless")
 
-        self.driver = webdriver.Firefox(
-            service=FirefoxService(GeckoDriverManager().install()),
-            options=firefox_options,
-        )
-        # Set a larger window size to ensure all elements are visible
-        self.driver.set_window_size(1920, 1080)
+        firefox_options.add_argument("--width=1920")
+        firefox_options.add_argument("--height=1080")
+
+        # Use geckodriver from PATH
+        driver = webdriver.Firefox(options=firefox_options)
+        return driver
+
+    def _login(self) -> None:
+        """Log in to StepStone account."""
+        email = os.environ.get("STEPSTONE_EMAIL")
+        password = os.environ.get("STEPSTONE_PASSWORD")
+
+        if not email or not password:
+            logger.warning(
+                "STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login"
+            )
+            return
+
+        logger.info("Logging in to StepStone...")
+
+        self.driver.get(self.LOGIN_URL)
+
+        try:
+            # Accept cookies if prompted
+            try:
+                WebDriverWait(self.driver, 5).until(
+                    EC.element_to_be_clickable((By.ID, "ccmgt_explicit_accept"))
+                ).click()
+                logger.info("Accepted cookies")
+            except (TimeoutException, NoSuchElementException):
+                logger.info("No cookie banner found")
+
+            # Enter email
+            email_input = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "loginEmail"))
+            )
+            email_input.send_keys(email)
+
+            # Find and click continue button
+            continue_button = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//button[@data-testid='button-continue']")
+                )
+            )
+            continue_button.click()
+
+            # Enter password
+            password_input = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.ID, "loginPassword"))
+            )
+            password_input.send_keys(password)
+
+            # Find and click login button
+            login_button = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//button[@data-testid='button-login']")
+                )
+            )
+            login_button.click()
+
+            # Wait for login to complete
+            WebDriverWait(self.driver, 10).until(
+                lambda driver: "stepstone.de/5/dashboard" in driver.current_url
+                or "stepstone.de/jobs" in driver.current_url
+            )
+
+            logger.info("Successfully logged in to StepStone")
+
+        except Exception as e:
+            logger.error(f"Error logging in: {e}")
+            raise
 
     def search(
         self,
         job_titles: List[str],
         location: str,
-        max_results: Optional[int] = None,
-        days_back: Optional[int] = None,
-    ) -> List[Dict]:
-        """Search for job listings on StepStone.
+        get_first_n: int = 0,
+        get_last_n: int = 0,
+    ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+        """Search for jobs on StepStone.
 
         Args:
             job_titles: List of job titles to search for
-            location: Location to search within
-            max_results: Maximum number of results to fetch (overrides init value)
-            days_back: How far back to search (overrides init value)
+            location: Location to search in
+            get_first_n: Number of first jobs to get details for
+            get_last_n: Number of last jobs to get details for
 
         Returns:
-            List of job listings as dictionaries
+            A tuple containing:
+                - A list of job listings dictionaries
+                - A list of related job terms dictionaries
         """
-        max_results = max_results or self.max_results
-        days_back = days_back or self.days_back
-
+        start_time = time.time()
         all_jobs = []
+        all_related_terms = []
 
-        # Search for each job title
         for job_title in job_titles:
-            logger.info(f"Searching for '{job_title}' in '{location}'")
+            logger.info(f"Searching for {job_title} in {location}...")
 
-            # Construct the search URL
-            search_query = f"{job_title} {location}"
-            encoded_query = search_query.replace(" ", "+")
-            url = f"{self.SEARCH_URL}?q={encoded_query}"
+            # Construct search URL with sort parameter
+            sort_param = "date" if self.sort_order == "desc" else "date_asc"
+            search_query = (
+                f"?what={quote(job_title)}&where={quote(location)}&sort={sort_param}"
+            )
+            url = f"{self.SEARCH_URL}{search_query}"
 
-            # Use selenium to handle JavaScript-rendered content
             self.driver.get(url)
-
-            # Sleep a bit to ensure page loads
-            time.sleep(3)
 
             # Accept cookies if prompted
             try:
-                cookie_button = WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.driver, 5).until(
                     EC.element_to_be_clickable((By.ID, "ccmgt_explicit_accept"))
-                )
-                cookie_button.click()
-                logger.info("Accepted cookies prompt")
-                time.sleep(1)  # Wait for cookie banner to disappear
-            except Exception as e:
-                logger.debug(f"No cookie prompt appeared or couldn't click: {e}")
+                ).click()
+            except (TimeoutException, NoSuchElementException):
+                pass
 
-            # Get all job listings
-            jobs = self._extract_job_listings(max_results, days_back)
+            jobs, related_terms = self._parse_search_results()
+
+            # Log progress
+            logger.info(
+                f"Found {len(jobs)} job listings for '{job_title}' in '{location}'"
+            )
+
             all_jobs.extend(jobs)
-            logger.info(f"Found {len(jobs)} jobs for '{job_title}' in '{location}'")
+            all_related_terms.extend(related_terms)
 
-            # Limit total results
-            if len(all_jobs) >= max_results:
-                all_jobs = all_jobs[:max_results]
+            # Check if we exceeded max runtime
+            if (
+                self.max_runtime_seconds
+                and (time.time() - start_time) > self.max_runtime_seconds
+            ):
+                logger.info(
+                    f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                )
                 break
 
-        return all_jobs
+        # Filter out jobs with synthetic IDs which can't be used for detail lookup
+        valid_jobs = [job for job in all_jobs if not job["id"].startswith("synthetic-")]
 
-    def _extract_job_listings(self, max_results: int, days_back: int) -> List[Dict]:
-        """Extract job listings from search results.
+        # Process the first N and last N jobs if requested
+        processed_jobs = []
 
-        Args:
-            max_results: Maximum number of results to fetch
-            days_back: How far back to search (in days)
+        if get_first_n > 0 and valid_jobs:
+            first_n = valid_jobs[: min(get_first_n, len(valid_jobs))]
+            logger.info(f"Getting details for first {len(first_n)} jobs")
+
+            for job in first_n:
+                if job.get("id"):
+                    details = self.get_job_details(job["id"])
+                    processed_jobs.append({**job, "details": details})
+
+                    # Check if we exceeded max runtime
+                    if (
+                        self.max_runtime_seconds
+                        and (time.time() - start_time) > self.max_runtime_seconds
+                    ):
+                        logger.info(
+                            f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                        )
+                        break
+
+        if get_last_n > 0 and valid_jobs:
+            last_n = valid_jobs[-min(get_last_n, len(valid_jobs)) :]
+            logger.info(f"Getting details for last {len(last_n)} jobs")
+
+            for job in last_n:
+                if job.get("id"):
+                    details = self.get_job_details(job["id"])
+                    processed_jobs.append({**job, "details": details})
+
+                    # Check if we exceeded max runtime
+                    if (
+                        self.max_runtime_seconds
+                        and (time.time() - start_time) > self.max_runtime_seconds
+                    ):
+                        logger.info(
+                            f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                        )
+                        break
+
+        # If no specific jobs were requested for processing, return the raw list
+        if get_first_n == 0 and get_last_n == 0:
+            return all_jobs, all_related_terms
+        else:
+            return processed_jobs, all_related_terms
+
+    def _parse_search_results(
+        self,
+    ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+        """Parse the search results page.
 
         Returns:
-            List of job listings as dictionaries
+            A tuple containing:
+                - A list of job listings dictionaries
+                - A list of related job terms dictionaries
         """
         jobs = []
-        page_num = 1
-        cutoff_date = datetime.datetime.now() - datetime.timedelta(days=days_back)
+        page = 1
+        total_jobs = 0
+        start_time = time.time()
 
-        # Try to get the total number of results
-        try:
-            total_results_element = self.driver.find_element(
-                By.CSS_SELECTOR, "h1[data-testid='search-results-count']"
-            )
-            total_text = total_results_element.text
-            logger.info(f"Search results header: {total_text}")
-        except Exception as e:
-            logger.warning(f"Could not find total results count: {e}")
-
-        while len(jobs) < max_results:
-            # Take a screenshot for debugging
-            screenshot_file = f"search_page_{page_num}.png"
+        while True:
+            # Get job listings on current page
             try:
-                self.driver.save_screenshot(screenshot_file)
-                logger.info(f"Saved screenshot to {screenshot_file}")
-            except Exception as e:
-                logger.warning(f"Could not save screenshot: {e}")
-
-            # Wait for job listings to load - try different potential selectors
-            try:
-                # Look for job listings container - try multiple possible selectors
-                for selector in [
-                    "article.job-element",
-                    "div[data-testid='job-item']",
-                    "div.sc-iBdmCd",
-                    "li.sc-jrcTuL",
-                    "article",
-                    "[data-testid='job-item']",
-                ]:
-                    try:
-                        WebDriverWait(self.driver, 5).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                        )
-                        logger.info(f"Found job listings with selector: {selector}")
-                        job_elements_selector = selector
-                        break
-                    except Exception:
-                        continue
-                else:
-                    # If no selector worked, log the page source for debugging
-                    logger.error("Could not find job elements with any known selector")
-                    logger.debug(f"Page source: {self.driver.page_source[:1000]}...")
-                    break
-            except Exception as e:
-                logger.error(f"Failed to load job listings: {e}")
-                break
-
-            # Extract job listings from current page
-            soup = BeautifulSoup(self.driver.page_source, "html.parser")
-
-            # Try multiple selectors to find job listings
-            job_elements = []
-            for selector in [
-                "article.job-element",
-                "div[data-testid='job-item']",
-                "div.sc-iBdmCd",
-                "li.sc-jrcTuL",
-                "article",
-                "[data-testid='job-item']",
-            ]:
-                elements = soup.select(selector)
-                if elements:
-                    job_elements = elements
-                    logger.info(
-                        f"Found {len(elements)} job elements with selector: {selector}"
+                job_listings = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_all_elements_located(
+                        (By.CSS_SELECTOR, "article[data-testid='job-item']")
                     )
-                    break
-
-            if not job_elements:
-                logger.warning("No job listings found on this page")
-                # Let's try to find any potential job elements for debugging
-                for tag in ["article", "div", "li"]:
-                    elements = soup.find_all(tag)
-                    logger.debug(f"Found {len(elements)} {tag} elements")
-                    # Look at first few elements to see if they might contain job info
-                    for i, elem in enumerate(elements[:5]):
-                        if i == 0:
-                            logger.debug(
-                                f"Sample {tag} classes: {elem.get('class', [])}"
-                            )
+                )
+            except TimeoutException:
+                logger.warning("No job listings found or timeout")
                 break
 
-            # Process each job listing
-            for job_element in job_elements:
-                if len(jobs) >= max_results:
-                    break
+            logger.info(f"Found {len(job_listings)} job listings on page {page}")
 
+            for job_element in job_listings:
                 try:
-                    # Extract job data
-                    job_data = self._extract_job_data(job_element)
+                    job = self._extract_job_info(job_element)
+                    jobs.append(job)
+                    total_jobs += 1
 
-                    # Skip jobs without an ID
-                    if not job_data.get("id"):
-                        logger.warning("Skipping job without ID")
-                        continue
-
-                    # Check if job is within the time range
-                    if job_data.get("published_at"):
-                        try:
-                            pub_date = datetime.datetime.fromisoformat(
-                                job_data["published_at"]
-                            )
-                            if pub_date < cutoff_date:
-                                logger.debug(
-                                    f"Skipping job published before cutoff date: {pub_date}"
-                                )
-                                continue
-                        except ValueError:
-                            # If we can't parse the date, still include the job
-                            pass
-
-                    # Add job to the list
-                    jobs.append(job_data)
-                    logger.debug(
-                        f"Added job: {job_data['title']} at {job_data['company']}"
-                    )
-
+                    # Check if we've reached the maximum number of results
+                    if total_jobs >= self.max_results:
+                        logger.info(
+                            f"Reached maximum number of results: {self.max_results}"
+                        )
+                        break
                 except Exception as e:
-                    logger.error(f"Error extracting job data: {e}")
-                    continue
+                    logger.error(f"Error extracting job info: {e}")
 
-            if len(jobs) >= max_results:
+            # Check if we need to stop due to limits
+            if total_jobs >= self.max_results:
                 break
 
-            # Look for next page button
+            # Check if we exceeded max runtime
+            if (
+                self.max_runtime_seconds
+                and (time.time() - start_time) > self.max_runtime_seconds
+            ):
+                logger.info(
+                    f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                )
+                break
+
+            # Try to go to next page
             try:
-                # Try different selectors for pagination
-                next_button = None
-                for next_selector in [
-                    "button[aria-label='Next']",
-                    "a[data-at='pagination-next']",
-                    "li.next a",
-                    "a[rel='next']",
-                    "[aria-label='Next page']",
-                ]:
-                    next_buttons = soup.select(next_selector)
-                    if next_buttons and "disabled" not in next_buttons[0].attrs:
-                        next_button = next_buttons[0]
-                        logger.info(f"Found next button with selector: {next_selector}")
-                        break
-
-                if not next_button or "disabled" in next_button.attrs:
-                    logger.info("No more pages available")
-                    break
-
-                # Go to next page
-                page_num += 1
-                if "href" in next_button.attrs:
-                    next_url = next_button["href"]
-                    if not next_url.startswith("http"):
-                        next_url = f"{self.BASE_URL}{next_url}"
-                else:
-                    next_url = f"{self.driver.current_url}&page={page_num}"
-
-                logger.info(f"Going to next page: {page_num}, URL: {next_url}")
-                self.driver.get(next_url)
-                time.sleep(3)  # Wait for page to load
-
+                next_button = self.driver.find_element(
+                    By.CSS_SELECTOR, "[data-testid='next-button']:not([disabled])"
+                )
+                next_button.click()
+                page += 1
+                time.sleep(1)  # Wait for page to load
+            except NoSuchElementException:
+                logger.info("No more pages available")
+                break
             except Exception as e:
                 logger.error(f"Error navigating to next page: {e}")
                 break
 
-        return jobs
+        # Extract related search terms
+        related_terms = self._extract_related_terms()
 
-    def _extract_job_data(self, job_element) -> Dict:
-        """Extract job data from a job listing element.
+        return jobs, related_terms
+
+    def _extract_job_info(self, job_element) -> Dict[str, str]:
+        """Extract job information from a job listing element.
 
         Args:
-            job_element: BeautifulSoup element containing job data
+            job_element: The job listing HTML element
 
         Returns:
-            Dictionary containing job data
+            A dictionary containing job information
         """
-        # Debugging
-        element_classes = job_element.get("class", [])
-        element_id = job_element.get("id", "")
-        logger.debug(
-            f"Processing job element with classes: {element_classes}, id: {element_id}"
-        )
+        # Extract job title
+        try:
+            title_element = job_element.find_element(
+                By.CSS_SELECTOR, "h2[data-testid='job-element-title']"
+            )
+            title = title_element.text.strip()
+        except NoSuchElementException:
+            title = "Unknown Title"
 
-        # Extract job ID from various possible sources
-        job_id = element_id
-        if not job_id:
-            # Try to get ID from data attribute
-            job_id = job_element.get("data-job-id", "")
-
-        if not job_id:
-            # Try to extract from URL in link
-            link = job_element.select_one("a")
-            if link and "href" in link.attrs:
-                href = link["href"]
-                # Extract job ID from URL patterns like /job/12345 or ?jobId=12345
-                if "/job/" in href:
-                    job_id = href.split("/job/")[-1].split("/")[0].split("?")[0]
-                elif "jobId=" in href:
-                    job_id = href.split("jobId=")[-1].split("&")[0]
-
-        # Extract job title using various selectors
-        title = ""
-        for title_selector in [
-            "h2",
-            "h3",
-            "[data-testid='job-title']",
-            ".job-title",
-            ".listing-title",
-        ]:
-            title_element = job_element.select_one(title_selector)
-            if title_element:
-                title = title_element.get_text().strip()
-                break
-
-        # Extract company
-        company = ""
-        for company_selector in [
-            "span[data-testid='company-name']",
-            ".company-name",
-            "[data-testid='company']",
-            ".listing-company",
-        ]:
-            company_element = job_element.select_one(company_selector)
-            if company_element:
-                company = company_element.get_text().strip()
-                break
+        # Extract company name
+        try:
+            company_element = job_element.find_element(
+                By.CSS_SELECTOR, "span[data-testid='job-element-company']"
+            )
+            company = company_element.text.strip()
+        except NoSuchElementException:
+            company = "Unknown Company"
 
         # Extract location
-        location = ""
-        for location_selector in [
-            "span[data-testid='job-location']",
-            ".job-location",
-            "[data-testid='location']",
-            ".listing-location",
-        ]:
-            location_element = job_element.select_one(location_selector)
-            if location_element:
-                location = location_element.get_text().strip()
-                break
+        try:
+            location_element = job_element.find_element(
+                By.CSS_SELECTOR, "span[data-testid='job-element-location']"
+            )
+            location = location_element.text.strip()
+        except NoSuchElementException:
+            location = "Unknown Location"
 
-        # Extract URL
-        url = ""
-        url_element = job_element.select_one("a")
-        if url_element and "href" in url_element.attrs:
-            relative_url = url_element["href"]
-            # Check if it's a relative or absolute URL
-            if relative_url.startswith("http"):
-                url = relative_url
-            else:
-                url = f"{self.BASE_URL}{relative_url}"
+        # Extract job URL and ID
+        try:
+            url_element = job_element.find_element(
+                By.CSS_SELECTOR, "a[data-testid='job-element-link']"
+            )
+            url = url_element.get_attribute("href")
+            # Extract the ID from the URL
+            job_id = url.split("/")[-1].split("?")[0]
 
-        # Extract published date
-        published_at = ""
-        for date_selector in [
-            "time",
-            "[data-testid='job-date']",
-            ".job-date",
-            ".listing-date",
-        ]:
-            date_element = job_element.select_one(date_selector)
-            if date_element:
-                if date_element.get("datetime"):
-                    published_at = date_element["datetime"]
-                    break
-                else:
-                    # Try to parse from text
-                    date_text = date_element.get_text().strip()
-                    if date_text:
-                        if "today" in date_text.lower():
-                            published_at = datetime.datetime.now().isoformat()
-                            break
-                        elif "yesterday" in date_text.lower():
-                            published_at = (
-                                datetime.datetime.now() - datetime.timedelta(days=1)
-                            ).isoformat()
-                            break
-                        else:
-                            published_at = date_text  # Store as text if we can't parse
+            # Skip synthetic IDs
+            if not job_id or len(job_id) < 5:
+                job_id = f"synthetic-{uuid.uuid4()}"
 
-        # Create job data dictionary
-        job_data = {
+        except NoSuchElementException:
+            url = None
+            job_id = f"synthetic-{uuid.uuid4()}"
+
+        # Extract posting date if available
+        try:
+            date_element = job_element.find_element(
+                By.CSS_SELECTOR, "span[data-testid='job-element-date']"
+            )
+            posting_date = date_element.text.strip()
+        except NoSuchElementException:
+            posting_date = "Unknown"
+
+        return {
             "id": job_id,
             "title": title,
             "company": company,
             "location": location,
             "url": url,
-            "published_at": published_at,
-            "scraped_at": datetime.datetime.now().isoformat(),
-            "platform": "stepstone",
+            "posting_date": posting_date,
+            "source": "StepStone",
+            "scraped_at": datetime.now().isoformat(),
         }
 
-        logger.debug(f"Extracted job data: {job_data}")
-        return self._normalize_job_data(job_data)
-
-    def get_job_details(self, job_id: str) -> Dict:
-        """Get detailed information about a specific job.
-
-        Args:
-            job_id: Unique identifier for the job
+    def _extract_related_terms(self) -> List[Dict[str, str]]:
+        """Extract related search terms.
 
         Returns:
-            Dictionary containing job details
+            A list of related search terms dictionaries
         """
-        url = f"{self.BASE_URL}/job/{job_id}"
-        logger.info(f"Getting details for job {job_id} from {url}")
+        related_terms = []
 
-        # Load the job page
-        self.driver.get(url)
-        time.sleep(2)  # Wait for page to load
-
-        # Wait for job details to load - try different potential selectors
         try:
-            for selector in [
-                "div.job-detail",
-                "div[data-testid='job-details']",
-                "article.job-element",
-                "div.job-description",
-            ]:
-                try:
-                    WebDriverWait(self.driver, 5).until(
-                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                    )
-                    logger.info(f"Found job details with selector: {selector}")
-                    break
-                except Exception:
-                    continue
-            else:
-                logger.error("Could not find job details with any known selector")
-        except Exception as e:
-            logger.error(f"Failed to load job details: {e}")
-            return {}
-
-        # Save screenshot for debugging
-        try:
-            self.driver.save_screenshot(f"job_detail_{job_id}.png")
-        except Exception as e:
-            logger.warning(f"Could not save screenshot: {e}")
-
-        # Parse the page content
-        soup = BeautifulSoup(self.driver.page_source, "html.parser")
-
-        # Extract job details - try different selectors for each field
-
-        # Title
-        title = ""
-        for title_selector in ["h1", "h1[data-testid='job-title']", ".job-title"]:
-            title_element = soup.select_one(title_selector)
-            if title_element:
-                title = title_element.get_text().strip()
-                break
-
-        # Company
-        company = ""
-        for company_selector in [
-            "span[data-testid='company-name']",
-            ".company-name",
-            "div[data-testid='company']",
-        ]:
-            company_element = soup.select_one(company_selector)
-            if company_element:
-                company = company_element.get_text().strip()
-                break
-
-        # Location
-        location = ""
-        for location_selector in [
-            "span[data-testid='job-location']",
-            ".job-location",
-            "div[data-testid='location']",
-        ]:
-            location_element = soup.select_one(location_selector)
-            if location_element:
-                location = location_element.get_text().strip()
-                break
-
-        # Description
-        description = ""
-        for desc_selector in [
-            "div.job-description",
-            "div[data-testid='job-description']",
-            "div.job-detail-description",
-            "section[data-testid='description']",
-        ]:
-            description_element = soup.select_one(desc_selector)
-            if description_element:
-                description = description_element.get_text().strip()
-                break
-
-        # Published date
-        published_at = ""
-        for date_selector in ["time", "span[data-testid='job-date']", ".job-date"]:
-            date_element = soup.select_one(date_selector)
-            if date_element:
-                if date_element.get("datetime"):
-                    published_at = date_element["datetime"]
-                    break
-                else:
-                    date_text = date_element.get_text().strip()
-                    if "today" in date_text.lower():
-                        published_at = datetime.datetime.now().isoformat()
-                        break
-                    elif "yesterday" in date_text.lower():
-                        published_at = (
-                            datetime.datetime.now() - datetime.timedelta(days=1)
-                        ).isoformat()
-                        break
-
-        # Create job data dictionary
-        job_data = {
-            "id": job_id,
-            "title": title,
-            "company": company,
-            "location": location,
-            "description": description,
-            "url": url,
-            "published_at": published_at,
-            "scraped_at": datetime.datetime.now().isoformat(),
-            "platform": "stepstone",
-        }
-
-        # Extract additional details - try different selectors
-        for details_selector in [
-            "dl.job-listing-details__list",
-            "div.job-facts",
-            "div[data-testid='job-facts']",
-        ]:
-            job_details_items = soup.select(
-                f"{details_selector} dt, {details_selector} dd"
+            related_elements = self.driver.find_elements(
+                By.CSS_SELECTOR, "div[data-testid='serp-similar-searches'] a"
             )
 
-            if job_details_items:
-                logger.info(
-                    f"Found job details items with selector: {details_selector}"
-                )
-                for i in range(0, len(job_details_items) - 1, 2):
-                    if i + 1 < len(job_details_items):
-                        key = (
-                            job_details_items[i]
-                            .get_text()
-                            .strip()
-                            .lower()
-                            .replace(" ", "_")
-                        )
-                        value = job_details_items[i + 1].get_text().strip()
-                        job_data[key] = value
-                break
+            for element in related_elements:
+                title = element.text.strip()
+                url = element.get_attribute("href")
 
-        return self._normalize_job_data(job_data)
+                related_terms.append(
+                    {"title": title, "url": url, "type": "related_search"}
+                )
+
+        except Exception as e:
+            logger.warning(f"Error extracting related terms: {e}")
+
+        return related_terms
+
+    def get_job_details(self, job_id: str) -> Dict[str, Any]:
+        """Get detailed information about a job listing.
+
+        Args:
+            job_id: The job listing ID
+
+        Returns:
+            A dictionary containing detailed job information
+        """
+        logger.info(f"Getting details for job ID: {job_id}")
+
+        # Skip synthetic IDs
+        if job_id.startswith("synthetic-"):
+            logger.warning(f"Skipping synthetic job ID: {job_id}")
+            return {"error": "Synthetic job ID"}
+
+        # Construct job URL
+        job_url = f"{self.BASE_URL}/stellenangebote/{job_id}"
+        self.driver.get(job_url)
+
+        # Wait for job details to load
+        try:
+            WebDriverWait(self.driver, 15).until(  # Increased timeout
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-testid='job-detail-page']")
+                )
+            )
+        except TimeoutException:
+            logger.error("Timeout waiting for job details to load")
+            return {"error": "Timeout loading job details"}
+
+        job_details = {}
+
+        # Extract basic information
+        try:
+            job_details["title"] = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='job-detail-title']"
+            ).text.strip()
+        except NoSuchElementException:
+            job_details["title"] = "Unknown Title"
+
+        try:
+            job_details["company"] = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='job-detail-company']"
+            ).text.strip()
+        except NoSuchElementException:
+            job_details["company"] = "Unknown Company"
+
+        try:
+            job_details["location"] = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='job-detail-location']"
+            ).text.strip()
+        except NoSuchElementException:
+            job_details["location"] = "Unknown Location"
+
+        # Extract job description
+        try:
+            description_element = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='job-detail-description']"
+            )
+            job_details["description"] = description_element.get_attribute("innerHTML")
+        except NoSuchElementException:
+            job_details["description"] = ""
+
+        # Extract additional information if available
+        try:
+            # Extract salary if available
+            salary_elements = self.driver.find_elements(
+                By.XPATH, "//dt[contains(text(), 'Gehalt')]/following-sibling::dd[1]"
+            )
+            if salary_elements:
+                job_details["salary"] = salary_elements[0].text.strip()
+
+            # Extract employment type if available
+            type_elements = self.driver.find_elements(
+                By.XPATH,
+                "//dt[contains(text(), 'Beschäftigungsart')]/following-sibling::dd[1]",
+            )
+            if type_elements:
+                job_details["employment_type"] = type_elements[0].text.strip()
+
+            # Extract additional metadata from the job description page
+            metadata_elements = self.driver.find_elements(
+                By.CSS_SELECTOR,
+                "dl.at-section-description-list dt, dl.at-section-description-list dd",
+            )
+
+            # Process metadata elements in pairs
+            for i in range(0, len(metadata_elements), 2):
+                if i + 1 < len(metadata_elements):
+                    key = metadata_elements[i].text.strip().lower().replace(" ", "_")
+                    value = metadata_elements[i + 1].text.strip()
+                    job_details[key] = value
+
+        except Exception as e:
+            logger.warning(f"Error extracting additional details: {e}")
+
+        # Extract application deadline if available
+        try:
+            deadline_elements = self.driver.find_elements(
+                By.XPATH,
+                "//dt[contains(text(), 'Bewerbungsfrist')]/following-sibling::dd[1]",
+            )
+            if deadline_elements:
+                job_details["application_deadline"] = deadline_elements[0].text.strip()
+        except Exception:
+            pass
+
+        # Add metadata
+        job_details["id"] = job_id
+        job_details["url"] = job_url
+        job_details["source"] = "StepStone"
+        job_details["scraped_at"] = datetime.now().isoformat()
+
+        return job_details
+
+    def close(self):
+        """Close the web driver."""
+        if self.driver:
+            self.driver.quit()
+            logger.info("WebDriver closed")
 
     def __del__(self):
-        """Clean up resources."""
-        if hasattr(self, "driver"):
-            try:
-                self.driver.quit()
-            except:
-                pass
+        """Destructor to ensure the web driver is closed."""
+        self.close()
+
+
+def main():
+    """Run the scraper for testing purposes."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="StepStone Job Scraper")
+    parser.add_argument(
+        "--job-title", default="Data Engineer", help="Job title to search for"
+    )
+    parser.add_argument("--location", default="Hamburg", help="Location to search in")
+    parser.add_argument(
+        "--max-results", type=int, default=25, help="Maximum number of results to fetch"
+    )
+    parser.add_argument("--headless", action="store_true", help="Run in headless mode")
+    parser.add_argument("--login", action="store_true", help="Login to StepStone")
+    parser.add_argument("--max-runtime", type=int, help="Maximum runtime in seconds")
+    parser.add_argument(
+        "--sort",
+        choices=["asc", "desc"],
+        default="desc",
+        help="Sort order (asc or desc by date)",
+    )
+    parser.add_argument(
+        "--first-n", type=int, default=0, help="Get details for first N jobs"
+    )
+    parser.add_argument(
+        "--last-n", type=int, default=0, help="Get details for last N jobs"
+    )
+
+    args = parser.parse_args()
+
+    scraper = StepStoneScraper(
+        max_results=args.max_results,
+        headless=args.headless,
+        login=args.login,
+        max_runtime_seconds=args.max_runtime,
+        sort_order=args.sort,
+    )
+
+    try:
+        jobs, related_terms = scraper.search(
+            [args.job_title],
+            args.location,
+            get_first_n=args.first_n,
+            get_last_n=args.last_n,
+        )
+
+        print(f"\nFound {len(jobs)} jobs for '{args.job_title}' in '{args.location}'")
+
+        if args.first_n > 0 or args.last_n > 0:
+            print(f"\nRetrieved details for {len(jobs)} jobs")
+            for i, job in enumerate(jobs, 1):
+                print(f"\n--- Job {i} ---")
+                print(f"Title: {job.get('title', 'N/A')}")
+                print(f"Company: {job.get('company', 'N/A')}")
+                print(f"Location: {job.get('location', 'N/A')}")
+                if "details" in job:
+                    print(
+                        f"Description length: {len(job['details'].get('description', ''))}"
+                    )
+                    if "salary" in job["details"]:
+                        print(f"Salary: {job['details']['salary']}")
+
+    finally:
+        scraper.close()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,3 +1,178 @@
 Search for 'Data Engineer' in 'Hamburg'
-Found 0 job listings
+Found 25 job listings
+
+--- Job 1 ---
+Title: Data Engineer & Steward (d/w/m)
+Company: Unilever Deutschland Holding GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/unilever-deutschland-holding-gmbh-702/jobs
+ID: job-item-12282896
+
+--- Job 2 ---
+Title: Data Engineer (m/w/d)
+Company: INFOMOTION GmbH
+Location: Frankfurt, Köln, Hamburg, Stuttgart, München, Berlin, Dresden
+URL: https://www.stepstone.de/cmp/de/infomotion-gmbh-47684/jobs
+ID: job-item-12287895
+
+--- Job 3 ---
+Title: Data Engineer (all genders)
+Company: PRODYNA SE
+Location: Frankfurt am Main, Berlin, Hamburg, Düsseldorf, München, Stuttgart
+URL: https://www.stepstone.de/cmp/de/prodyna-se-22458/jobs
+ID: job-item-12209434
+
+--- Job 4 ---
+Title: Data Engineer* / Machine Learning Engineer*
+Company: inovex GmbH
+Location: Karlsruhe, Köln, München, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen
+URL: https://www.stepstone.de/cmp/de/inovex-gmbh-24494/jobs
+ID: job-item-11713465
+
+--- Job 5 ---
+Title: Data Engineer (m/w/d)
+Company: emetriq GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/emetriq-gmbh-64114/jobs
+ID: job-item-12272205
+
+--- Job 6 ---
+Title: Data Engineers, Analysts & Scientists (w|m|d)
+Company: BridgingIT GmbH
+Location: Hamburg, Köln, Mannheim, München, Nürnberg, Stuttgart
+URL: https://www.stepstone.de/cmp/de/bridgingit-gmbh-61818/jobs
+ID: job-item-12151811
+
+--- Job 7 ---
+Title: Big Data Engineer Scala (m/w/d)
+Company: INFOMOTION GmbH
+Location: Frankfrt am Main, Köln, Stuttgart, München, Berlin, Dresden, Hamburg, Saarbrücken, Wien
+URL: https://www.stepstone.de/cmp/de/infomotion-gmbh-47684/jobs
+ID: job-item-12215579
+
+--- Job 8 ---
+Title: Data Engineer (gn)
+Company: LichtBlick SE
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/lichtblick-se-68566/jobs
+ID: job-item-12317867
+
+--- Job 9 ---
+Title: Senior Cloud Data Engineer (all genders)
+Company: msg systems ag
+Location: Berlin, Essen, Frankfurt am Main, Hamburg, Ismaning bei München, Karlsruhe, Köln, Stuttgart
+URL: https://www.stepstone.de/cmp/de/msg-systems-ag-5245/jobs
+ID: job-item-11783168
+
+--- Job 10 ---
+Title: Senior Cloud Data Engineer (m/w/d)
+Company: Hays – Interne Karriere bei Uns
+Location: Hamburg, Stuttgart, Mannheim, Frankfurt am Main, Berlin, München, Köln, Wiesbaden
+URL: https://www.stepstone.de/cmp/de/hays-%e2%80%93-interne-karriere-bei-uns-75924/jobs
+ID: job-item-12263652
+
+--- Job 11 ---
+Title: SAP Data Engineer (m/w/d) / SAP BW Entwickler (m/w/d) in Voll- oder Teilzeit
+Company: Union Investment
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/union-investment-47090/jobs
+ID: job-item-12164804
+
+--- Job 12 ---
+Title: Data Analytics Engineer (m/w/d)
+Company: Obungi GmbH
+Location: Hamburg, Kiel, Bremen, Lübeck, Lüneburg
+URL: https://www.stepstone.de/cmp/de/obungi-gmbh-90299/jobs
+ID: job-item-11707039
+
+--- Job 13 ---
+Title: Data Engineer (m/w/d)
+Company: Computer Futures
+Location: Hamburg, Frankfurt, München, Hannover, Köln, Berlin, Düsseldorf, Stuttgart
+URL: https://www.stepstone.de/cmp/de/computer-futures-70331/jobs
+ID: job-item-11830466
+
+--- Job 14 ---
+Title: Cloud Data Engineer (all genders)
+Company: msg systems ag
+Location: Berlin, Düsseldorf, Essen, Frankfurt am Main, Hamburg, Ismaning bei München, Karlsruhe, Köln,
+URL: https://www.stepstone.de/cmp/de/msg-systems-ag-5245/jobs
+ID: job-item-11783160
+
+--- Job 15 ---
+Title: Data Scientist / Data Engineer (m/w/d)
+Company: Amadeus Fire AG
+Location: Frankfurt, Hamburg, Köln, Düsseldorf
+URL: https://www.stepstone.de/cmp/de/amadeus-fire-ag-26452/jobs
+ID: job-item-12314960
+
+--- Job 16 ---
+Title: Senior Data Engineer (m/w/d)
+Company: HOYER GmbH Internationale Fachspedition
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/hoyer-gmbh-internationale-fachspedition-37379/jobs
+ID: job-item-12265361
+
+--- Job 17 ---
+Title: Senior Data Engineer* / Machine Learning Engineer*
+Company: inovex GmbH
+Location: Karlsruhe, Köln, München, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen
+URL: https://www.stepstone.de/cmp/de/inovex-gmbh-24494/jobs
+ID: job-item-10481544
+
+--- Job 18 ---
+Title: Abschlussarbeit im Bereich Datenstrategie und Künstliche Intelligenz
+Company: Senacor Technologies AG
+Location: Berlin, Bonn, Frankfurt, Hamburg, München, Nürnberg, Wien
+URL: https://www.stepstone.de/cmp/de/senacor-technologies-ag-47734/jobs
+ID: job-item-11265780
+
+--- Job 19 ---
+Title: System Engineer (all genders) Collaboration Exchange Admin
+Company: DATAGROUP
+Location: Hamburg, bundesweit, Home-Office
+URL: https://www.stepstone.de/cmp/de/datagroup-38117/jobs
+ID: job-item-12273562
+
+--- Job 20 ---
+Title: Werkstudent*in Data Engineering | Data platforms (m/w/d)
+Company: Otto Group data.works GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/otto-group-dataworks-gmbh-249041/jobs
+ID: job-item-12314463
+
+--- Job 21 ---
+Title: Informatiker*in (w/m/d) als Sachgebietsleitung
+Company: Stadt Norderstedt
+Location: Norderstedt
+URL: https://www.stepstone.de/cmp/de/stadt-norderstedt-61608/jobs
+ID: job-item-12273574
+
+--- Job 22 ---
+Title: Lead Data Ops Engineering - Data Sourcing (m/f/d)
+Company: Statista GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/statista-gmbh-70120/jobs
+ID: job-item-12289216
+
+--- Job 23 ---
+Title: Senior Cloud Engineer - AWS (m/f/d)
+Company: EOS Technology Solutions GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/eos-technology-solutions-gmbh-96100/jobs
+ID: job-item-12264618
+
+--- Job 24 ---
+Title: Cloud Networking Engineer (m/w/d)
+Company: EOS Technology Solutions GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/eos-technology-solutions-gmbh-96100/jobs
+ID: job-item-12253342
+
+--- Job 25 ---
+Title: Senior Data Scientist (m/w/d)
+Company: justtrack GmbH
+Location: Hamburg
+URL: https://www.stepstone.de/cmp/de/justtrack-gmbh-392512/jobs
+ID: job-item-12285690
 
