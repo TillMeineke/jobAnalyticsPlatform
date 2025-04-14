@@ -56,3 +56,5 @@ data/*.parquet
 
 # examples folder
 examples/
+
+bin/
