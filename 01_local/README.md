@@ -1,105 +1,163 @@
-# 🖥️ Local Development Environment
+# 🏠 Local Development Environment
 
-This directory contains all configurations and code for running the Job Analytics Platform locally using Docker.
-
-## 🏗️ Architecture
-
-The local development environment consists of:
-
-- **PostgreSQL**: Database for storing job data in all three layers (bronze, silver, gold)
-- **dlt**: For data ingestion into the bronze layer
-- **dbt**: For transforming data from bronze to silver and gold layers
-- **Kestra**: For workflow orchestration
-- **Metabase**: For data visualization and dashboards
+This directory contains all components needed for local development and testing of the job analytics platform.
 
 ## 📂 Directory Structure
 
+- `src/` - Source code for data collection and processing
+  - `scrapers/` - Web scrapers for different job platforms
+  - `pipeline/` - Data processing pipeline components
+  - `database/` - Database models and utilities
+  - `scripts/` - Utility scripts
+
+## 🤖 Web Scrapers
+
+### StepStone Scraper
+
+The StepStone scraper has two main components:
+
+1. **Search Retriever**
+   - Collects basic job listing information
+   - Stores data in SQLite database
+
+2. **Details Retriever**
+   - Fetches comprehensive job details
+   - Updates existing records in the database
+
+### Running the Scrapers
+
+#### Prerequisites
+
+1. Ensure geckodriver is installed (handled automatically by Makefile)
+2. Create and configure `.env` file with login credentials (if needed)
+
+#### Search Retriever
+
+```bash
+make search-jobs ARGS="--job-titles 'Data Engineer' 'Data Scientist' --location 'Deutschland'"
 ```
-.
-├── docker-compose.yml         # Docker Compose configuration
-├── dlt_pipelines/             # Data ingestion pipelines
-│   ├── jobs_pipeline.py       # Main pipeline for job data ingestion
-│   └── README.md              # DLT pipeline documentation
-├── dbt_project/               # DBT project for transformations
-│   ├── models/                # DBT models
-│   │   ├── bronze_to_silver/  # Models for cleaning data
-│   │   └── silver_to_gold/    # Models for analytics-ready data
-│   └── README.md              # DBT project documentation
-├── kestra/                    # Kestra workflow definitions
-│   └── README.md              # Kestra workflow documentation
-└── metabase/                  # Metabase dashboard configurations
-    └── README.md              # Dashboard documentation
+
+This will:
+
+- Search for multiple job titles
+- Store basic job information in the SQLite database
+- Continue running until interrupted (Ctrl+C)
+
+#### Details Retriever
+
+```bash
+make fetch-details ARGS="--max-updates 10 --sleep-time 30"
 ```
 
-## 🚀 Getting Started
+This will:
 
-### Prerequisites
+- Fetch detailed information for jobs in the database
+- Process 10 jobs per batch
+- Wait 30 seconds between batches
 
-- Docker and Docker Compose
-- Python 3.9+
-- Make
+## 💾 Database
 
-### Setup Instructions
+The scrapers store data in an SQLite database named `stepstone_jobs.db` in the project root directory.
 
-1. **Clone the repository (if you haven't already)**
+### Database Schema
 
-   ```bash
-   git clone <repository-url>
-   cd jobAnalyticsPlatform
-   ```
+```
+Table: jobs
+- job_id (TEXT, PRIMARY KEY): Unique identifier for the job
+- title (TEXT): Job title
+- company (TEXT): Company name
+- location (TEXT): Job location
+- url (TEXT): URL to the job posting
+- salary (TEXT): Salary information (if available)
+- posted (TEXT): When the job was posted
+- source (TEXT): Source platform (e.g., "StepStone")
+- scraped (INTEGER): Flag indicating if detailed info was scraped (0/1)
+- scraped_at (TEXT): Timestamp of when job was scraped
+- description (TEXT): Full job description
+- created_at (TEXT): Record creation timestamp
 
-2. **Set up environment variables**
+Table: job_skills
+- id (INTEGER, PRIMARY KEY): Auto-incrementing ID
+- job_id (TEXT): Reference to jobs table
+- skill (TEXT): Skill name
+- UNIQUE(job_id, skill): Prevents duplicate skills per job
+```
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+### Querying the Database
 
-3. **Build and start the Docker containers**
+You can query the database using SQLite:
 
-   ```bash
-   cd 01_local
-   docker-compose up -d
-   ```
+```bash
+sqlite3 stepstone_jobs.db
 
-4. **Initialize the database schemas**
+# View all tables
+.tables
 
-   ```bash
-   # This will be implemented in the Makefile
-   make init-db
-   ```
+# Count total jobs
+SELECT COUNT(*) FROM jobs;
 
-5. **Run the initial data pipeline**
+# View jobs with details
+SELECT job_id, title, company, location FROM jobs WHERE scraped = 1;
 
-   ```bash
-   # This will be implemented in the Makefile
-   make run-pipeline
-   ```
+# View job skills
+SELECT j.title, s.skill 
+FROM jobs j 
+JOIN job_skills s ON j.job_id = s.job_id 
+LIMIT 10;
+```
 
-6. **Access the services**
-   - Metabase: <http://localhost:3000>
-   - Kestra: <http://localhost:8080>
-   - PostgreSQL: localhost:5432
+## 🐳 Docker
+
+Local services are managed using Docker Compose:
+
+```bash
+# Build and start services
+make setup-local
+make run-local
+
+# Stop services
+make clean-local
+```
 
 ## 🧪 Testing
 
-Run the tests for the local pipeline components:
+Run tests for the local components:
 
 ```bash
-# This will be implemented in the Makefile
 make test-local
 ```
 
-## 🔄 Development Workflow
+## 📝 Development Workflow
 
-1. Make changes to the scraper code in the `src/scrapers` directory
-2. Run the pipeline to collect data: `make run-pipeline`
-3. Develop and test dbt models in the `dbt_project` directory
-4. Build dashboards in Metabase
+1. Run the scrapers to collect data
+2. Process the data using the pipeline
+3. Visualize using local Metabase instance
 
-## 📚 Additional Documentation
+## 🔄 Data Flow
 
-- [DLT Pipeline Details](./dlt_pipelines/README.md)
-- [DBT Project Guide](./dbt_project/README.md)
-- [Kestra Workflows](./kestra/README.md)
-- [Metabase Dashboards](./metabase/README.md)
+```
+Web Scraping → SQLite (Bronze) → Transformation → PostgreSQL (Silver) → Analytics → Metabase (Gold)
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+1. **Geckodriver compatibility warnings**
+   - The system automatically installs the correct version (0.36.0)
+   - If warnings persist, run `make clean-geckodriver && make setup-geckodriver`
+
+2. **Login failures**
+   - Ensure your `.env` file contains valid credentials:
+
+     ```
+     STEPSTONE_EMAIL=your.email@example.com
+     STEPSTONE_PASSWORD=your_password
+     ```
+
+3. **No jobs found**
+   - Try different job titles or locations
+   - Check if the site structure has changed (may require scraper updates)
+
+4. **Rate limiting**
+   - Increase sleep time between requests: `--sleep-time 120`

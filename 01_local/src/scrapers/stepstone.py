@@ -73,14 +73,16 @@ class StepStoneScraper:
         return driver
 
     def _login(self) -> bool:
-        """Log in to StepStone account."""
-        email = os.getenv("STEPSTONE_EMAIL")
-        password = os.getenv("STEPSTONE_PASSWORD")
+        """Log in to StepStone account.
+        
+        Returns:
+            bool: True if login successful, False otherwise
+        """
+        email = os.environ.get("STEPSTONE_EMAIL")
+        password = os.environ.get("STEPSTONE_PASSWORD")
 
         if not email or not password:
-            logger.warning(
-                "STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login"
-            )
+            logger.warning("STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login")
             return False
 
         logger.info("Logging in to StepStone...")
@@ -95,78 +97,76 @@ class StepStoneScraper:
                 logger.info("Accepted cookies")
             except (TimeoutException, NoSuchElementException):
                 logger.debug("No cookie banner found")
+                
+            # StepStone has multiple login page variants, try different selectors
+            email_selectors = ["#email", "#loginEmail", "[name='email']"]
+            for selector in email_selectors:
+                try:
+                    email_input = WebDriverWait(self.driver, 3).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                    )
+                    email_input.send_keys(email)
+                    logger.debug(f"Found email input with selector: {selector}")
+                    break
+                except (TimeoutException, NoSuchElementException):
+                    continue
+            else:
+                logger.error("Could not find email input field")
+                return False
 
-            # Enter email
-            email_input = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, "email"))
-            )
-            email_input.send_keys(email)
+            # Find and click continue button - try different selectors
+            continue_selectors = ["button[type='submit']", "[data-testid='button-continue']", ".at-login-email-button"]
+            for selector in continue_selectors:
+                try:
+                    continue_button = WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                    )
+                    continue_button.click()
+                    logger.debug(f"Found continue button with selector: {selector}")
+                    break
+                except (TimeoutException, NoSuchElementException):
+                    continue
+            else:
+                logger.error("Could not find continue button")
+                return False
 
-            # Find and click continue button
-            continue_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']"))
-            )
-            continue_button.click()
+            # Wait for password field to appear
+            time.sleep(1)  # Small delay for page transition
+            
+            # Try different selectors for password field
+            password_selectors = ["#password", "#loginPassword", "[name='password']"]
+            for selector in password_selectors:
+                try:
+                    password_input = WebDriverWait(self.driver, 3).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                    )
+                    password_input.send_keys(password)
+                    logger.debug(f"Found password input with selector: {selector}")
+                    break
+                except (TimeoutException, NoSuchElementException):
+                    continue
+            else:
+                logger.error("Could not find password input field")
+                return False
 
-            # Enter password
-            password_input = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.ID, "password"))
-            )
-            password_input.send_keys(password)
-
-            # Find and click login button
-            login_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']"))
-            )
-            login_button.click()
+            # Find and click login button - try different selectors
+            login_selectors = ["button[type='submit']", "[data-testid='button-login']", ".at-login-password-button"]
+            for selector in login_selectors:
+                try:
+                    login_button = WebDriverWait(self.driver, 3).until(
+                        EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                    )
+                    login_button.click()
+                    logger.debug(f"Found login button with selector: {selector}")
+                    break
+                except (TimeoutException, NoSuchElementException):
+                    continue
+            else:
+                logger.error("Could not find login button")
+                return False
 
             # Wait for login to complete
             try:
-                WebDriverWait(self.driver, 10).until(
-                    lambda driver: any(
-                        path in driver.current_url
-                        for path in ["/dashboard", "/jobs", "/profile"]
-                    )
-                )
-                logger.info("Successfully logged in to StepStone")
-                return True
-            except TimeoutException:
-                logger.error("Login failed - could not verify successful login")
-                return False
-
-        except Exception as e:
-            logger.error(f"Login failed: {str(e)}")
-            return False
-
-    def search(
-        self, job_titles: List[str], location: str
-    ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
-        """Search for jobs and return results with related terms."""
-        start_time = time.time()
-        all_jobs = []
-        all_related_terms = []
-
-        for job_title in job_titles:
-            logger.info(f"Searching for {job_title} in {location}...")
-
-            sort_param = "date" if self.sort_order == "desc" else "date_asc"
-            search_query = (
-                f"?what={quote(job_title)}&where={quote(location)}&sort={sort_param}"
-            )
-            url = f"{self.SEARCH_URL}{search_query}"
-
-            self.driver.get(url)
-
-            try:
-                WebDriverWait(self.driver, 5).until(
-                    EC.element_to_be_clickable((By.ID, "ccmgt_explicit_accept"))
-                ).click()
-            except (TimeoutException, NoSuchElementException):
-                pass
-
-            total_jobs = self._extract_total_jobs()
-            logger.info(f"Found {total_jobs} total jobs")
-
             jobs, related_terms = self._parse_search_results()
 
             logger.info(f"Extracted {len(jobs)} job listings")

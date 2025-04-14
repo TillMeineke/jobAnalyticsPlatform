@@ -45,9 +45,9 @@ setup-geckodriver:
 	@if [ ! -f "$(LOCAL_BIN)/geckodriver" ]; then \
 		echo "📥 Installing geckodriver to $(LOCAL_BIN)..."; \
 		if [ "$$(uname)" = "Darwin" ]; then \
-			wget -q https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-macos.tar.gz -O /tmp/geckodriver.tar.gz; \
+			wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-macos.tar.gz -O /tmp/geckodriver.tar.gz; \
 		elif [ "$$(uname)" = "Linux" ]; then \
-			wget -q https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz; \
+			wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz; \
 		else \
 			echo "❌ Unsupported operating system"; \
 			exit 1; \
@@ -56,9 +56,24 @@ setup-geckodriver:
 		chmod +x /tmp/geckodriver; \
 		mv /tmp/geckodriver $(LOCAL_BIN)/; \
 		rm /tmp/geckodriver.tar.gz; \
-		echo "✅ Geckodriver installed successfully"; \
+		echo "✅ Geckodriver v0.36.0 installed successfully"; \
 	else \
 		echo "✅ Geckodriver already exists at $(LOCAL_BIN)/geckodriver"; \
+		GECKO_VERSION=$$($(LOCAL_BIN)/geckodriver --version | head -1 | awk '{print $$2}'); \
+		if [ "$$GECKO_VERSION" != "0.36.0" ]; then \
+			echo "🔄 Updating geckodriver to v0.36.0 (currently $$GECKO_VERSION)..."; \
+			rm -f $(LOCAL_BIN)/geckodriver; \
+			if [ "$$(uname)" = "Darwin" ]; then \
+				wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-macos.tar.gz -O /tmp/geckodriver.tar.gz; \
+			elif [ "$$(uname)" = "Linux" ]; then \
+				wget -q https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz -O /tmp/geckodriver.tar.gz; \
+			fi; \
+			tar -xzf /tmp/geckodriver.tar.gz -C /tmp/; \
+			chmod +x /tmp/geckodriver; \
+			mv /tmp/geckodriver $(LOCAL_BIN)/; \
+			rm /tmp/geckodriver.tar.gz; \
+			echo "✅ Geckodriver v0.36.0 installed successfully"; \
+		fi; \
 	fi
 
 clean-geckodriver:
