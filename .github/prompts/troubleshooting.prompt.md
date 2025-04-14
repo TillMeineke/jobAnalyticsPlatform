@@ -8,7 +8,8 @@ This guide contains common errors encountered during development and their solut
 
 **Error**: Module not found errors (e.g., `ModuleNotFoundError: No module named 'selenium'`)
 
-**Solution**: 
+**Solution**:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -18,11 +19,14 @@ pip install -r requirements.txt
 **Error**: Webdriver executable not found or Firefox/Gecko not installed
 
 **Solution**:
+
 1. Ensure Firefox is installed on your system
 2. Install the geckodriver:
+
    ```bash
    pip install webdriver-manager
    ```
+
    This package will handle downloading the appropriate geckodriver version.
 
 ## Selenium Troubleshooting
@@ -39,6 +43,7 @@ pip install -r requirements.txt
 **Error**: `ElementNotInteractableException`
 
 **Solution**: Use WebDriverWait to ensure element is ready before interacting:
+
 ```python
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -53,6 +58,7 @@ element.click()
 **Error**: `StaleElementReferenceException`
 
 **Solution**: Re-locate the element after page changes:
+
 ```python
 def safe_click(driver, element_finder, max_attempts=3):
     for attempt in range(max_attempts):
@@ -70,6 +76,7 @@ def safe_click(driver, element_finder, max_attempts=3):
 **Error**: Cannot connect to the Docker daemon
 
 **Solution**:
+
 ```bash
 # Check if Docker is running
 docker info
@@ -85,6 +92,7 @@ sudo systemctl start docker
 **Error**: Cannot connect to PostgreSQL database
 
 **Solution**:
+
 ```bash
 # Check if PostgreSQL container is running
 docker ps | grep postgres
@@ -99,6 +107,7 @@ docker-compose up -d
 **Error**: Module import errors despite files existing
 
 **Solution**: Make sure the package structure is properly set up with `__init__.py` files and run from the project root:
+
 ```bash
 # Run scripts from project root
 cd /path/to/jobAnalyticsPlatform
@@ -110,6 +119,7 @@ python -m src.tests.test_stepstone_scraper
 **Error**: Tests failing with unexpected errors
 
 **Solution**: Use verbose mode to see more details:
+
 ```bash
 pytest -v src/tests/test_stepstone_scraper.py
 ```
