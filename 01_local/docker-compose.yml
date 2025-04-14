@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+  # PostgreSQL database for all layers
+  postgres:
+    image: postgres:15
+    container_name: job-analytics-postgres
+    environment:
+      - POSTGRES_USER=jobanalytics
+      - POSTGRES_PASSWORD=jobanalytics
+      - POSTGRES_DB=jobanalytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - job-analytics-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobanalytics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Metabase for dashboards
+  metabase:
+    image: metabase/metabase:latest
+    container_name: job-analytics-metabase
+    depends_on:
+      - postgres
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=metabase
+      - MB_DB_PORT=5432
+      - MB_DB_USER=jobanalytics
+      - MB_DB_PASS=jobanalytics
+      - MB_DB_HOST=postgres
+    ports:
+      - "3000:3000"
+    networks:
+      - job-analytics-network
+
+  # Kestra for workflow orchestration
+  kestra:
+    image: kestra/kestra:latest-full
+    container_name: job-analytics-kestra
+    ports:
+      - "8080:8080"
+    environment:
+      - KESTRA_CONFIGURATION=prod
+      - KESTRA_URL=http://localhost:8080
+      - KESTRA_JDBC_URL=jdbc:postgresql://postgres:5432/kestra
+      - KESTRA_JDBC_USERNAME=jobanalytics
+      - KESTRA_JDBC_PASSWORD=jobanalytics
+    depends_on:
+      - postgres
+    networks:
+      - job-analytics-network
+
+  # Python service for running scripts
+  python:
+    build:
+      context: ..
+      dockerfile: 01_local/Dockerfile.python
+    container_name: job-analytics-python
+    volumes:
+      - ..:/app
+    networks:
+      - job-analytics-network
+    depends_on:
+      - postgres
+    command: "tail -f /dev/null"  # Keep container running
+
+networks:
+  job-analytics-network:
+    name: job-analytics-network
+
+volumes:
+  postgres_data:
+    name: job-analytics-postgres-data

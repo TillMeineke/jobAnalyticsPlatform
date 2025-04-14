@@ -53,3 +53,6 @@ venv.bak/
 data/*.csv
 data/*.json
 data/*.parquet
+
+# examples folder
+examples/

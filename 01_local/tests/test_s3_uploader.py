@@ -3,9 +3,13 @@ Tests for the S3 uploader module.
 """
 
 import os
+import sys
 import pytest
 import tempfile
 from unittest.mock import patch, MagicMock
+
+# Add the root directory to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.data_processing.s3_uploader import S3Uploader
 
@@ -104,8 +108,10 @@ def test_upload_bronze_data(mock_s3_client):
          patch("os.path.exists", return_value=True), \
          patch("datetime.datetime") as mock_datetime:
         
-        # Mock the datetime to get a consistent date
-        mock_datetime.now.return_value.strftime.return_value = "2025/03/29"
+        # Mock the datetime.now() to return a fixed date
+        mock_date = MagicMock()
+        mock_date.strftime.return_value = "2025/03/30"
+        mock_datetime.now.return_value = mock_date
         
         uploader = S3Uploader("test-bucket")
         count = uploader.upload_bronze_data("/fake/path")
@@ -113,9 +119,9 @@ def test_upload_bronze_data(mock_s3_client):
         # Should only upload .csv and .parquet files (2 of the 3 files)
         assert count == 2
         
-        # Verify the S3 prefix contains the date
+        # Verify the S3 prefix contains the correctly formatted date from our mock
         mock_s3_client.upload_file.assert_any_call(
             "/fake/path/file1.csv", 
             "test-bucket",
-            "bronze/2025/03/29/file1.csv"
+            "bronze/2025/03/30/file1.csv"
         )

@@ -129,12 +129,15 @@ class TestJobDataPipeline(unittest.TestCase):
     
     @patch('dlt.pipeline')
     @patch('dlt.resource')
-    def test_init(self, mock_resource, mock_pipeline):
+    @patch('dlt.destinations.filesystem')
+    def test_init(self, mock_filesystem, mock_resource, mock_pipeline):
         """Test initialization of the JobDataPipeline."""
         # Set up mock pipeline instance
         mock_pipeline_instance = MagicMock()
         mock_pipeline.return_value = mock_pipeline_instance
         mock_resource.return_value = self.mock_resource
+        mock_filesystem_instance = MagicMock()
+        mock_filesystem.return_value = mock_filesystem_instance
         
         # Initialize pipeline
         pipeline = JobDataPipeline(self.config)
@@ -145,11 +148,8 @@ class TestJobDataPipeline(unittest.TestCase):
         
         # Check the basic parameters
         self.assertEqual(kwargs["pipeline_name"], self.config.pipeline_name)
-        self.assertEqual(kwargs["destination"], "filesystem")
+        self.assertEqual(kwargs["destination"], mock_filesystem_instance)
         self.assertEqual(kwargs["dataset_name"], self.config.dataset_name)
-        self.assertTrue("bucket_url" in kwargs)
-        self.assertTrue(kwargs["bucket_url"].startswith("file://"))
-        self.assertEqual(kwargs["file_format"], "parquet")
         
         # Check that job schema was initialized correctly
         mock_resource.assert_called_once_with(
@@ -157,6 +157,12 @@ class TestJobDataPipeline(unittest.TestCase):
             primary_key="job_id",
             write_disposition="append"
         )
+        
+        # Verify filesystem destination was initialized correctly
+        mock_filesystem.assert_called_once()
+        fs_args, fs_kwargs = mock_filesystem.call_args
+        self.assertEqual(fs_kwargs["file_format"], "parquet")
+        self.assertTrue("root_path" in fs_kwargs)
     
     def test_verify_data_quality(self):
         """Test data quality verification."""
