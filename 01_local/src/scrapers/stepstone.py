@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -13,8 +14,11 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from termcolor import colored
+from webdriver_manager.firefox import GeckoDriverManager
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(
@@ -50,18 +54,32 @@ class StepStoneScraper:
         max_runtime_seconds: Optional[int] = None,
         sort_order: str = "desc",
     ):
+        """Initialize StepStoneScraper.
+
+        Args:
+            max_results: Maximum number of results to fetch
+            headless: Run in headless mode if True
+            login: Log in to StepStone if True
+            max_runtime_seconds: Maximum runtime in seconds
+            sort_order: Sort order (asc or desc by date)
+        """
         self.max_results = max_results
         self.headless = headless
         self.should_login = login
         self.max_runtime_seconds = max_runtime_seconds
         self.sort_order = sort_order.lower()
         self.driver = self._setup_driver()
+        self.total_jobs_found = 0
 
         if self.should_login:
             self._login()
 
     def _setup_driver(self) -> webdriver.Firefox:
-        """Set up the Firefox web driver."""
+        """Set up the Firefox web driver using webdriver-manager.
+
+        Returns:
+            Firefox WebDriver instance
+        """
         firefox_options = FirefoxOptions()
         if self.headless:
             firefox_options.add_argument("--headless")
@@ -69,7 +87,10 @@ class StepStoneScraper:
         firefox_options.add_argument("--width=1920")
         firefox_options.add_argument("--height=1080")
 
-        driver = webdriver.Firefox(options=firefox_options)
+        # Use webdriver-manager to handle geckodriver installation
+        service = FirefoxService(GeckoDriverManager().install())
+        driver = webdriver.Firefox(service=service, options=firefox_options)
+
         return driver
 
     def _login(self) -> bool:
@@ -83,7 +104,11 @@ class StepStoneScraper:
 
         if not email or not password:
             logger.warning(
-                "STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login"
+                colored(
+                    "STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login. "
+                    "Login is required for detailed job information.",
+                    "yellow",
+                )
             )
             return False
 
@@ -113,7 +138,7 @@ class StepStoneScraper:
                 except (TimeoutException, NoSuchElementException):
                     continue
             else:
-                logger.error("Could not find email input field")
+                logger.error(colored("Could not find email input field", "red"))
                 return False
 
             # Find and click continue button - try different selectors
@@ -133,7 +158,7 @@ class StepStoneScraper:
                 except (TimeoutException, NoSuchElementException):
                     continue
             else:
-                logger.error("Could not find continue button")
+                logger.error(colored("Could not find continue button", "red"))
                 return False
 
             # Wait for password field to appear
@@ -152,7 +177,7 @@ class StepStoneScraper:
                 except (TimeoutException, NoSuchElementException):
                     continue
             else:
-                logger.error("Could not find password input field")
+                logger.error(colored("Could not find password input field", "red"))
                 return False
 
             # Find and click login button - try different selectors
@@ -172,23 +197,25 @@ class StepStoneScraper:
                 except (TimeoutException, NoSuchElementException):
                     continue
             else:
-                logger.error("Could not find login button")
+                logger.error(colored("Could not find login button", "red"))
                 return False
 
             # Wait for login to complete
             try:
                 WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, "[data-at='user-menu']")
+                    lambda driver: any(
+                        path in driver.current_url
+                        for path in ["/dashboard", "/jobs", "/profile", "/5/dashboard"]
                     )
                 )
-                logger.info("Login successful")
+                logger.info(colored("Login successful", "green"))
                 return True
             except TimeoutException:
-                logger.error("Login failed")
+                logger.error(colored("Login failed", "red"))
                 return False
+
         except Exception as e:
-            logger.error(f"Error during login: {e}")
+            logger.error(colored(f"Error during login: {e}", "red"))
             return False
 
     def search(self, job_title: str, location: str) -> Tuple[List[Dict[str, str]], int]:
@@ -217,6 +244,17 @@ class StepStoneScraper:
         # Navigate to search page
         self.driver.get(url)
 
+        # Wait for page title to load (helps ensure accurate job count extraction)
+        try:
+            WebDriverWait(self.driver, 5).until(
+                lambda driver: job_title.lower() in driver.title.lower()
+                and (
+                    "treffer" in driver.title.lower() or "jobs" in driver.title.lower()
+                )
+            )
+        except TimeoutException:
+            logger.debug("Page title did not load with expected content")
+
         # Accept cookies if prompted
         try:
             WebDriverWait(self.driver, 5).until(
@@ -234,97 +272,174 @@ class StepStoneScraper:
                 )
             )
         except TimeoutException:
-            logger.warning("Timed out waiting for search results to load")
+            logger.warning(
+                colored("Timed out waiting for search results to load", "yellow")
+            )
 
         # Extract total number of jobs
-        total_jobs = self._extract_total_jobs()
+        self.total_jobs_found = self._extract_total_jobs()
 
         # Parse the search results and extract job listings
         jobs, related_terms = self._parse_search_results()
 
         logger.info(f"Found {len(jobs)} job listings for '{job_title}' in '{location}'")
 
-        return jobs, total_jobs
+        return jobs, self.total_jobs_found
 
     def _extract_total_jobs(self) -> int:
-        """Extract the total number of jobs found."""
+        """Extract the total number of jobs found.
+
+        Returns:
+            int: Total number of jobs found
+        """
         try:
             # Wait for page to load enough to find job count
             time.sleep(2)
 
-            # Try more specific selectors for the job count
+            # First, try the specific class for the total results counter
+            try:
+                total_results_element = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, ".at-facet-header-total-results")
+                    )
+                )
+
+                if total_results_element:
+                    text = total_results_element.text.strip()
+                    logger.debug(f"Found total jobs element with text: '{text}'")
+
+                    # Extract number from text (removing dots for German formatting)
+                    count_str = text.replace(".", "")
+                    if count_str.isdigit():
+                        count = int(count_str)
+                        logger.info(
+                            colored(
+                                f"Found {count} total jobs from results counter",
+                                "green",
+                            )
+                        )
+                        return count
+            except Exception as e:
+                logger.debug(f"Could not find total results element: {e}")
+
+            # Next try h1 with span that may contain the count
+            try:
+                elements = self.driver.find_elements(By.CSS_SELECTOR, "h1 > span")
+                for element in elements:
+                    text = element.text.strip()
+                    if text.isdigit() or (
+                        "." in text and text.replace(".", "").isdigit()
+                    ):
+                        count = int(text.replace(".", ""))
+                        logger.info(
+                            colored(f"Found {count} total jobs from h1 span", "green")
+                        )
+                        return count
+            except Exception as e:
+                logger.debug(f"h1 span selector failed: {e}")
+
+            # Check for the specific search headline which usually contains the count
             selectors = [
-                # Main search results header with count
                 "h1.at-search-composition-header-headline",
                 "h1.at-listing-search-header-title",
-                # Data attributes specifically for job counts
-                "[data-at='searchbar-jobs-count']",
-                "[data-at='found-jobs-count']",
-                # Fallback to any element containing "Treffer"
-                ".at-listing-search-header",
+                "[data-at='search-headline']",
+                ".at-listing-search-header-title",
             ]
 
             for selector in selectors:
                 try:
                     elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
                     for element in elements:
-                        total_text = element.text.strip()
-                        logger.debug(f"Found potential job count text: '{total_text}'")
+                        text = element.text.strip()
+                        logger.debug(f"Found element with text: '{text}'")
 
                         # Look for patterns like "1.251 Treffer" or "1251 Jobs"
-                        if "Treffer" in total_text or "Jobs" in total_text:
-                            # Try to extract the number part
-                            import re
+                        match = re.search(r"([\d\.]+)\s+(?:Treffer|Jobs)", text)
+                        if match:
+                            count_str = match.group(1).replace(".", "")
+                            count = int(count_str)
+                            logger.info(
+                                colored(
+                                    f"Found {count} total jobs from headline", "green"
+                                )
+                            )
+                            return count
+                except Exception as e:
+                    logger.debug(f"Selector {selector} failed: {e}")
 
-                            number_match = re.search(r"([\d.]+)", total_text)
-                            if number_match:
-                                count_str = number_match.group(1).replace(".", "")
-                                count = int(count_str)
-                                logger.info(f"Extracted job count: {count}")
-                                return count
-                except Exception as inner_e:
-                    logger.debug(f"Selector {selector} failed: {inner_e}")
-                    continue
+            # Check page title as fallback
+            title = self.driver.title
+            title_match = re.search(r"([\d\.]+)\s+(?:Treffer|Jobs)", title)
+            if title_match:
+                count_str = title_match.group(1).replace(".", "")
+                count = int(count_str)
+                logger.info(
+                    colored(f"Found {count} total jobs from page title", "green")
+                )
+                return count
 
-            # If all selectors fail, try scraping the title
+            # If all other methods fail, get the computed job count from page content
             try:
-                title = self.driver.title
-                if "Treffer" in title:
-                    import re
-
-                    number_match = re.search(r"([\d.]+)", title)
-                    if number_match:
-                        count_str = number_match.group(1).replace(".", "")
-                        count = int(count_str)
-                        logger.info(f"Extracted job count from title: {count}")
-                        return count
+                # Execute JavaScript to find and extract the job count
+                script = """
+                // Look for elements containing the text pattern "X Treffer" or "X Jobs"
+                const elements = document.querySelectorAll('*');
+                for (const element of elements) {
+                    if (element.innerText) {
+                        const match = element.innerText.match(/(\\d[\\d\\.]+)\\s+(Treffer|Jobs)/i);
+                        if (match) {
+                            return match[1].replace(/\\./g, '');
+                        }
+                    }
+                }
+                return "0";
+                """
+                result = self.driver.execute_script(script)
+                if result and result != "0":
+                    count = int(result)
+                    logger.info(
+                        colored(
+                            f"Found {count} total jobs using JavaScript extraction",
+                            "green",
+                        )
+                    )
+                    return count
             except Exception as e:
-                logger.debug(f"Title extraction failed: {e}")
+                logger.debug(f"JavaScript extraction failed: {e}")
 
-            # Last resort: try to use the number of job items found on the page
+            # Last resort: use the number of job items found on the page
             try:
                 job_elements = self.driver.find_elements(
                     By.CSS_SELECTOR, "[data-at='job-item']"
                 )
                 if job_elements:
-                    logger.info(
-                        f"Using job elements count as fallback: {len(job_elements)}"
+                    count = len(job_elements)
+                    logger.warning(
+                        colored(
+                            f"Could not find total job count, falling back to visible listings count: {count}",
+                            "yellow",
+                        )
                     )
-                    return len(job_elements)
+                    return count
             except Exception as e:
                 logger.debug(f"Job elements count failed: {e}")
 
-            logger.warning("Could not find job count with any method")
+            logger.warning(colored("Could not determine total job count", "yellow"))
             return 0
 
         except Exception as e:
-            logger.warning(f"Could not extract total jobs count: {e}")
+            logger.warning(colored(f"Error extracting total jobs count: {e}", "yellow"))
             return 0
 
     def _parse_search_results(
         self,
     ) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
-        """Parse the search results page."""
+        """Parse the search results page.
+
+        Returns:
+            Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+                A tuple containing job listings and related search terms
+        """
         jobs = []
         page = 1
         total_jobs = 0
@@ -351,11 +466,14 @@ class StepStoneScraper:
 
                         if total_jobs >= self.max_results:
                             logger.info(
-                                f"Reached maximum number of results: {self.max_results}"
+                                colored(
+                                    f"Reached maximum number of results: {self.max_results}",
+                                    "green",
+                                )
                             )
                             break
                     except Exception as e:
-                        logger.error(f"Error extracting job info: {e}")
+                        logger.error(colored(f"Error extracting job info: {e}", "red"))
                         continue
 
                 if total_jobs >= self.max_results:
@@ -378,14 +496,21 @@ class StepStoneScraper:
                     break
 
             except Exception as e:
-                logger.error(f"Error on page {page}: {e}")
+                logger.error(colored(f"Error on page {page}: {e}", "red"))
                 break
 
         related_terms = self._extract_related_terms()
         return jobs, related_terms
 
     def _extract_job_info(self, job_element) -> Optional[Dict[str, str]]:
-        """Extract information from a job listing element."""
+        """Extract information from a job listing element.
+
+        Args:
+            job_element: WebElement containing job information
+
+        Returns:
+            Optional[Dict[str, str]]: Job information or None if extraction failed
+        """
         try:
             # Extract base information
             title = job_element.find_element(
@@ -432,11 +557,15 @@ class StepStoneScraper:
                 "scraped_at": datetime.now().isoformat(),
             }
         except Exception as e:
-            logger.error(f"Error extracting job info: {e}")
+            logger.error(colored(f"Error extracting job info: {e}", "red"))
             return None
 
     def _extract_related_terms(self) -> List[Dict[str, str]]:
-        """Extract related search terms."""
+        """Extract related search terms.
+
+        Returns:
+            List[Dict[str, str]]: List of related search terms
+        """
         related_terms = []
         try:
             elements = self.driver.find_elements(
@@ -449,7 +578,7 @@ class StepStoneScraper:
                     {"title": title, "url": url, "type": "related_search"}
                 )
         except Exception as e:
-            logger.warning(f"Error extracting related terms: {e}")
+            logger.warning(colored(f"Error extracting related terms: {e}", "yellow"))
         return related_terms
 
     def get_job_details(self, job_id: str) -> dict:
@@ -459,7 +588,7 @@ class StepStoneScraper:
             job_id: The job listing ID
 
         Returns:
-            A dictionary containing detailed job information
+            dict: A dictionary containing detailed job information
         """
         logger.info(f"Getting details for job ID: {job_id}")
 
@@ -479,7 +608,10 @@ class StepStoneScraper:
                 )
             except TimeoutException:
                 logger.warning(
-                    f"Timed out waiting for job details page to load: {job_id}"
+                    colored(
+                        f"Timed out waiting for job details page to load: {job_id}",
+                        "yellow",
+                    )
                 )
                 return {}
 
@@ -492,7 +624,9 @@ class StepStoneScraper:
                 description = description_element.get_attribute("innerHTML")
                 logger.debug("Successfully extracted job description")
             except NoSuchElementException:
-                logger.warning("Could not find job description element")
+                logger.warning(
+                    colored("Could not find job description element", "yellow")
+                )
 
             # Extract skills (if available)
             skills = []
@@ -569,17 +703,25 @@ class StepStoneScraper:
                 "scraped_at": datetime.now().isoformat(),
             }
 
+            logger.info(
+                colored(f"Successfully retrieved details for job {job_id}", "green")
+            )
             return job_details
 
         except Exception as e:
-            logger.error(f"Error retrieving job details for {job_id}: {str(e)}")
+            logger.error(
+                colored(f"Error retrieving job details for {job_id}: {str(e)}", "red")
+            )
             return {}
 
     def close(self):
         """Close the web driver."""
         if self.driver:
-            self.driver.quit()
-            logger.info("WebDriver closed")
+            try:
+                self.driver.quit()
+                logger.info("WebDriver closed")
+            except Exception as e:
+                logger.warning(colored(f"Error closing WebDriver: {e}", "yellow"))
 
     def __del__(self):
         """Destructor to ensure the web driver is closed."""
@@ -627,11 +769,19 @@ def main():
     try:
         jobs, total_jobs = scraper.search(args.job_title, args.location)
 
-        logger.info(
-            f"\nFound {total_jobs} jobs for '{args.job_title}' in '{args.location}'"
+        # Print the total job count with emphasis for visibility
+        print("\n" + "=" * 80)
+        print(
+            colored(
+                f"StepStone reports a total of {total_jobs} available jobs for '{args.job_title}' in '{args.location}'",
+                "green",
+                attrs=["bold"],
+            )
         )
+        print("=" * 80)
 
         if jobs:
+            print(f"\nRetrieved {len(jobs)} job listings from the first page(s)")
             print("\nSample job listings:")
             for i, job in enumerate(jobs[:5], 1):
                 print(f"\n--- Job {i} ---")

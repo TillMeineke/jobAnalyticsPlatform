@@ -3,13 +3,16 @@
 This module implements a continuous job search retriever for StepStone jobs.
 """
 
+import argparse
 import os
 import sqlite3
 import time
+from datetime import datetime
 from typing import List
 
 import colorlog
 from dotenv import load_dotenv
+from termcolor import colored
 
 from .database_helpers import create_tables, insert_job_postings
 from .stepstone import StepStoneScraper
@@ -35,25 +38,33 @@ logger.setLevel("INFO")
 
 
 def main(
-    job_titles: List[str] = None,
-    location: str = "Deutschland",
+    job_titles: List[str],
+    locations: List[str],
     sleep_time: int = 60,
-    max_results: int = 100,
+    max_pages: int = 5,
+    verbose: bool = False,
 ) -> None:
     """Main function to continuously retrieve job search results.
 
     Args:
-        job_titles: List of job titles to search for
-        location: Location to search in
-        sleep_time: Time to sleep between searches in seconds
-        max_results: Maximum number of results to fetch per job title
+        job_titles: Job titles to search for
+        locations: Locations to search in
+        sleep_time: Time to sleep between iterations in seconds
+        max_pages: Maximum number of pages to fetch per search
+        verbose: Enable verbose logging if True
     """
-    if job_titles is None:
-        job_titles = ["Data Engineer"]
+    if verbose:
+        logger.setLevel("DEBUG")
 
-    logger.info(
-        f"Starting StepStone job search for: {', '.join(job_titles)} in {location}"
-    )
+    for job_title in job_titles:
+        for location in locations:
+            logger.info(
+                colored(
+                    f"Starting StepStone job search for: {job_title} in {location}",
+                    "green",
+                )
+            )
+
     load_dotenv()
 
     # Initialize database
@@ -65,49 +76,87 @@ def main(
 
     try:
         while True:
-            scraper = StepStoneScraper(
-                max_results=max_results, headless=True, login=False, sort_order="desc"
-            )
-
-            try:
-                # Get all jobs for each title
-                for job_title in job_titles:
+            for job_title in job_titles:
+                for location in locations:
+                    start_time = datetime.now()
                     logger.info(f"Searching for {job_title} in {location}")
 
-                    jobs, total_jobs = scraper.search(job_title, location)
+                    try:
+                        # Run the search with a new instance for each search
+                        scraper = StepStoneScraper(
+                            max_results=max_pages * 25, headless=True, login=False
+                        )
 
-                    if jobs:
-                        # Filter out existing jobs
-                        job_ids = [job["id"] for job in jobs]
-                        if job_ids:
-                            placeholders = ",".join(["?"] * len(job_ids))
-                            query = f"SELECT job_id FROM jobs WHERE job_id IN ({placeholders})"
-                            cursor.execute(query, job_ids)
-                            existing_ids = set(r[0] for r in cursor.fetchall())
+                        try:
+                            jobs, total_jobs = scraper.search(job_title, location)
 
-                            new_jobs = [
-                                job for job in jobs if job["id"] not in existing_ids
-                            ]
-
-                            if new_jobs:
-                                insert_job_postings(new_jobs, conn, cursor)
+                            # Display total job count with emphasis for visibility
+                            if total_jobs > 0:
                                 logger.info(
-                                    f"Added {len(new_jobs)} new jobs out of {len(jobs)} total for {job_title}"
+                                    colored(
+                                        f"StepStone reports {total_jobs} total available jobs for '{job_title}' in '{location}'",
+                                        "green",
+                                        attrs=["bold"],
+                                    )
+                                )
+                                print(
+                                    colored(
+                                        f"\n{'=' * 80}\nStepStone reports {total_jobs} total available jobs for '{job_title}' in '{location}'\n{'=' * 80}",
+                                        "green",
+                                    )
                                 )
                             else:
-                                logger.info(f"No new jobs found for {job_title}")
+                                logger.warning(
+                                    colored(
+                                        f"Could not determine total job count for '{job_title}' in '{location}'",
+                                        "yellow",
+                                    )
+                                )
 
-                        logger.info(
-                            f"StepStone reports {total_jobs} total available jobs for '{job_title}' in '{location}'"
+                            # Insert jobs into database
+                            if jobs:
+                                # Get existing job IDs to avoid duplicates
+                                existing_ids_query = (
+                                    "SELECT id FROM jobs WHERE source = 'StepStone'"
+                                )
+                                cursor.execute(existing_ids_query)
+                                existing_ids = {row[0] for row in cursor.fetchall()}
+
+                                # Filter out existing jobs
+                                new_jobs = [
+                                    job for job in jobs if job["id"] not in existing_ids
+                                ]
+
+                                if new_jobs:
+                                    # Insert new jobs
+                                    inserted_count = insert_job_postings(
+                                        new_jobs, conn, cursor
+                                    )
+                                    logger.info(
+                                        colored(
+                                            f"Added {inserted_count} new jobs out of {len(jobs)} total for {job_title}",
+                                            "green",
+                                        )
+                                    )
+                                else:
+                                    logger.info(
+                                        f"No new jobs found for {job_title} in {location}"
+                                    )
+                            else:
+                                logger.warning(
+                                    f"No jobs found for {job_title} in {location}"
+                                )
+
+                        finally:
+                            scraper.close()
+
+                    except Exception as e:
+                        logger.error(
+                            colored(
+                                f"Error during search for {job_title} in {location}: {str(e)}",
+                                "red",
+                            )
                         )
-                    else:
-                        logger.warning(f"No jobs found for {job_title} in {location}")
-
-                    # Small delay between searches
-                    time.sleep(2)
-
-            finally:
-                scraper.close()
 
             logger.info(f"Sleeping for {sleep_time} seconds before next search...")
             time.sleep(sleep_time)
@@ -116,37 +165,71 @@ def main(
     except KeyboardInterrupt:
         logger.info("Stopping job search (keyboard interrupt)...")
     except Exception as e:
-        logger.error(f"Error in job search: {e}")
+        logger.error(colored(f"Error in job search retriever: {str(e)}", "red"))
     finally:
         conn.close()
         logger.info("Search retriever stopped, database connection closed")
 
 
-if __name__ == "__main__":
-    import argparse
+def parse_arguments():
+    """Parse command-line arguments.
 
+    Returns:
+        argparse.Namespace: Parsed arguments
+    """
     parser = argparse.ArgumentParser(description="StepStone Job Search Retriever")
     parser.add_argument(
         "--job-titles",
-        nargs="+",
-        default=["Data Engineer"],
-        help="List of job titles to search for",
+        type=str,
+        required=True,
+        help="Comma-separated job titles to search for, or quoted job title",
     )
     parser.add_argument(
-        "--location", default="Deutschland", help="Location to search in"
+        "--locations",
+        type=str,
+        default="Deutschland",
+        help="Comma-separated locations to search in, or quoted location",
     )
     parser.add_argument(
         "--sleep-time",
         type=int,
         default=60,
-        help="Time to sleep between searches in seconds",
+        help="Time to sleep between iterations in seconds",
     )
     parser.add_argument(
-        "--max-results",
+        "--max-pages",
         type=int,
-        default=100,
-        help="Maximum number of results to fetch per job title",
+        default=5,
+        help="Maximum number of pages to fetch per search",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging",
+    )
+    return parser.parse_args()
 
-    args = parser.parse_args()
-    main(args.job_titles, args.location, args.sleep_time, args.max_results)
+
+if __name__ == "__main__":
+    args = parse_arguments()
+
+    # Process job titles and locations (handle both comma-separated and quoted strings)
+    job_titles = [
+        title.strip() for title in args.job_titles.split(",") if title.strip()
+    ]
+    # If only one job title is provided without commas, use it as is
+    if not job_titles and args.job_titles.strip():
+        job_titles = [args.job_titles.strip()]
+
+    locations = [loc.strip() for loc in args.locations.split(",") if loc.strip()]
+    # If only one location is provided without commas, use it as is
+    if not locations and args.locations.strip():
+        locations = [args.locations.strip()]
+
+    main(
+        job_titles=job_titles,
+        locations=locations,
+        sleep_time=args.sleep_time,
+        max_pages=args.max_pages,
+        verbose=args.verbose,
+    )
