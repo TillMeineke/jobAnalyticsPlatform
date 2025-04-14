@@ -1,4 +1,4 @@
-.PHONY: setup-local setup-cloud run-local run-cloud test-local test-cloud clean-local clean-cloud init-db run-pipeline validate-cloud estimate-cost all
+.PHONY: setup-local setup-cloud run-local run-cloud test-local test-cloud clean-local clean-cloud init-db run-pipeline validate-cloud estimate-cost all test-scraper
 
 # Default target
 all: setup-local
@@ -27,6 +27,11 @@ init-db:
 run-pipeline:
 	@echo "Running data pipeline..."
 	# This will be implemented later
+
+# Test specific components
+test-scraper:
+	@echo "Testing StepStone scraper with Data Engineer in Hamburg..."
+	python -m src.tests.test_stepstone_scraper
 
 # Cloud environment commands
 setup-cloud:
@@ -59,6 +64,7 @@ help:
 	@echo "  setup-local     - Set up local development environment"
 	@echo "  run-local       - Start local services"
 	@echo "  test-local      - Run tests for local environment"
+	@echo "  test-scraper    - Test the StepStone scraper with specific search terms"
 	@echo "  clean-local     - Clean local environment"
 	@echo "  init-db         - Initialize database schemas"
 	@echo "  run-pipeline    - Run data pipeline"

@@ -7,12 +7,12 @@ from typing import Dict, List, Optional
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 from src.scrapers.base import BaseScraper
 
@@ -44,15 +44,13 @@ class StepStoneScraper(BaseScraper):
         self._setup_browser()
 
     def _setup_browser(self):
-        """Set up the Selenium browser for scraping."""
-        chrome_options = Options()
+        """Set up the Firefox/Gecko browser for scraping."""
+        firefox_options = FirefoxOptions()
         if self.headless:
-            chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+            firefox_options.add_argument("--headless")
 
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=chrome_options
+        self.driver = webdriver.Firefox(
+            service=FirefoxService(GeckoDriverManager().install()), options=firefox_options
         )
 
     def search(
