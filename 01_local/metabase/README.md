@@ -38,6 +38,7 @@ Dashboards are refreshed according to the pipeline schedule:
 ### Local Setup
 
 1. Start the Docker environment:
+
    ```bash
    cd 01_local
    docker-compose up -d
@@ -66,15 +67,17 @@ Pre-configured dashboards can be imported using the Metabase admin interface:
 
 1. Go to `Admin settings` → `Databases`
 2. Ensure your database is connected and synchronized
-3. Navigate to `Dashboard` → `Import` 
+3. Navigate to `Dashboard` → `Import`
 4. Select the `.metabase` file you wish to import
 
 ## 📱 Dashboard Examples
 
 ### Job Count by Time
+
 ![Job Count by Time](../docs/images/job_count_time.png)
 
 ### Job Distribution by Location
+
 ![Job Distribution by Location](../docs/images/job_location.png)
 
 ## 🔒 Access Control

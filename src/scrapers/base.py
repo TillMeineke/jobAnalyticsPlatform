@@ -1,7 +1,7 @@
 """Base scraper class for job platforms."""
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 
 class BaseScraper(ABC):
@@ -16,13 +16,15 @@ class BaseScraper(ABC):
         """
         self.max_results = max_results
         self.days_back = days_back
-    
+
     @abstractmethod
-    def search(self, 
-               job_titles: List[str], 
-               location: str, 
-               max_results: Optional[int] = None, 
-               days_back: Optional[int] = None) -> List[Dict]:
+    def search(
+        self,
+        job_titles: List[str],
+        location: str,
+        max_results: Optional[int] = None,
+        days_back: Optional[int] = None,
+    ) -> List[Dict]:
         """Search for job listings.
 
         Args:
@@ -35,7 +37,7 @@ class BaseScraper(ABC):
             List of job listings as dictionaries
         """
         pass
-    
+
     @abstractmethod
     def get_job_details(self, job_id: str) -> Dict:
         """Get detailed information about a specific job.

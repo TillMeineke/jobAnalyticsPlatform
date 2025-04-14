@@ -15,6 +15,7 @@ This project implements an end-to-end data pipeline for collecting and analyzing
 The project implements two separate data pipelines:
 
 ### Local Development Pipeline (01_local)
+
 - Self-contained Docker environment
 - PostgreSQL for data storage
 - dlt for data ingestion
@@ -23,6 +24,7 @@ The project implements two separate data pipelines:
 - Metabase for visualization
 
 ### AWS Cloud Pipeline (02_cloud)
+
 - Terraform-managed infrastructure
 - S3 for bronze layer storage
 - AWS Glue for transformations
@@ -54,30 +56,35 @@ The project implements two separate data pipelines:
 ## 📋 Implementation Status
 
 ### 1. Project Setup
+
 - [ ] Create project structure with numbered folders
 - [ ] Set up local development environment (Docker Compose)
 - [ ] Configure cloud infrastructure templates (Terraform)
 - [ ] Create Makefile for common tasks
 
 ### 2. Data Collection
+
 - [ ] Implement job scraper for StepStone
 - [ ] Add support for additional job platforms
 - [ ] Configure scraper parameters (job titles, locations)
 - [ ] Add unit tests for scraper components
 
 ### 3. Data Pipeline
+
 - [ ] Implement dlt pipeline for bronze layer
 - [ ] Create dbt models for silver layer transformations
 - [ ] Build gold layer analytics models
 - [ ] Set up Kestra for workflow orchestration
 
 ### 4. Visualization
+
 - [ ] Configure Metabase instance
 - [ ] Create job distribution dashboard (by category)
 - [ ] Create temporal analysis dashboard (trends over time)
 - [ ] Add filtering capabilities
 
 ### 5. Deployment
+
 - [ ] Document local setup process
 - [ ] Configure AWS infrastructure with Terraform
 - [ ] Implement CI/CD pipeline
@@ -86,12 +93,14 @@ The project implements two separate data pipelines:
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Docker and Docker Compose
 - Python 3.9+
 - AWS CLI (for cloud deployment)
 - Terraform (for cloud deployment)
 
 ### Local Setup
+
 1. Clone this repository
 2. Navigate to the `01_local` directory
 3. Follow the setup instructions in the README.md

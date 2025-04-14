@@ -44,22 +44,26 @@ The cloud deployment uses the following AWS services:
 ### Setup Steps
 
 1. **Configure AWS credentials**
+
    ```bash
    aws configure
    ```
 
 2. **Initialize Terraform**
+
    ```bash
    cd 02_cloud/terraform
    terraform init
    ```
 
 3. **Plan the deployment**
+
    ```bash
    terraform plan -out=tfplan
    ```
 
 4. **Apply the configuration**
+
    ```bash
    terraform apply tfplan
    ```

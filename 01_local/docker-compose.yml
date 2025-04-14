@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   # PostgreSQL database for all layers
@@ -69,7 +69,7 @@ services:
       - job-analytics-network
     depends_on:
       - postgres
-    command: "tail -f /dev/null"  # Keep container running
+    command: "tail -f /dev/null" # Keep container running
 
 networks:
   job-analytics-network:

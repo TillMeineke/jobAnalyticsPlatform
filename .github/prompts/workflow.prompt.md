@@ -23,6 +23,7 @@ The project must be evaluated by peers based on reproducibility and technology u
 # Project Structure
 
 The project follows a clear folder structure:
+
 - `01_local/` - Local development environment (Docker-based)
 - `02_cloud/` - AWS cloud deployment (Terraform)
 - `src/` - Shared source code for scrapers and utilities

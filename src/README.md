@@ -72,6 +72,7 @@ pytest src/tests/
    - Add unit tests
 
 2. **Using the scrapers**:
+
    ```python
    from src.scrapers.stepstone import StepStoneScraper
    
@@ -84,6 +85,7 @@ pytest src/tests/
    ```
 
 3. **Logging**:
+
    ```python
    from src.utils.logging_utils import setup_logger
    

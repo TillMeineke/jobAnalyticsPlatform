@@ -42,38 +42,43 @@ The local development environment consists of:
 ### Setup Instructions
 
 1. **Clone the repository (if you haven't already)**
+
    ```bash
    git clone <repository-url>
    cd jobAnalyticsPlatform
    ```
 
 2. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Build and start the Docker containers**
+
    ```bash
    cd 01_local
    docker-compose up -d
    ```
 
 4. **Initialize the database schemas**
+
    ```bash
    # This will be implemented in the Makefile
    make init-db
    ```
 
 5. **Run the initial data pipeline**
+
    ```bash
    # This will be implemented in the Makefile
    make run-pipeline
    ```
 
 6. **Access the services**
-   - Metabase: http://localhost:3000
-   - Kestra: http://localhost:8080
+   - Metabase: <http://localhost:3000>
+   - Kestra: <http://localhost:8080>
    - PostgreSQL: localhost:5432
 
 ## 🧪 Testing

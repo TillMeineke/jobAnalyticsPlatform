@@ -48,6 +48,7 @@ Silver Layer (Cleaned Data)
 ### Bronze to Silver Transformations
 
 The bronze to silver transformation focuses on:
+
 - Data cleaning and validation
 - Type conversion
 - Column standardization
@@ -55,18 +56,21 @@ The bronze to silver transformation focuses on:
 - Handling missing values
 
 Key models:
+
 - `job_listings_cleaned.sql`: Cleans raw job listing data
 - `companies_cleaned.sql`: Extracts and normalizes company information
 
 ### Silver to Gold Transformations
 
 The silver to gold transformation focuses on:
+
 - Creating analytics-ready aggregations
 - Developing time-series views
 - Building dimensional models
 - Calculating metrics
 
 Key models:
+
 - `job_count_by_company.sql`: Counts jobs by company
 - `job_count_by_location.sql`: Counts jobs by location
 - `job_count_by_time.sql`: Tracks job listings over time
@@ -76,17 +80,20 @@ Key models:
 ### Bronze Layer
 
 Tables:
+
 - `bronze.job_listings`: Raw job listings scraped from platforms
 
 ### Silver Layer
 
 Tables:
+
 - `silver.job_listings`: Cleaned job listings
 - `silver.companies`: Normalized company information
 
 ### Gold Layer
 
 Tables:
+
 - `gold.job_count_by_company`: Aggregation by company
 - `gold.job_count_by_location`: Aggregation by location
 - `gold.job_count_by_time`: Time series analysis
