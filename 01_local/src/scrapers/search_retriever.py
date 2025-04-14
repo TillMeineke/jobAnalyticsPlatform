@@ -66,7 +66,7 @@ def main(
     try:
         while True:
             scraper = StepStoneScraper(
-                max_results=max_results, headless=True, login=True, sort_order="desc"
+                max_results=max_results, headless=True, login=False, sort_order="desc"
             )
 
             try:
@@ -79,27 +79,26 @@ def main(
                     if jobs:
                         # Filter out existing jobs
                         job_ids = [job["id"] for job in jobs]
-                        placeholders = ",".join(["?"] * len(job_ids))
-                        query = (
-                            f"SELECT job_id FROM jobs WHERE job_id IN ({placeholders})"
-                        )
-                        cursor.execute(query, job_ids)
-                        existing_ids = set(r[0] for r in cursor.fetchall())
+                        if job_ids:
+                            placeholders = ",".join(["?"] * len(job_ids))
+                            query = f"SELECT job_id FROM jobs WHERE job_id IN ({placeholders})"
+                            cursor.execute(query, job_ids)
+                            existing_ids = set(r[0] for r in cursor.fetchall())
 
-                        new_jobs = [
-                            job for job in jobs if job["id"] not in existing_ids
-                        ]
+                            new_jobs = [
+                                job for job in jobs if job["id"] not in existing_ids
+                            ]
 
-                        if new_jobs:
-                            insert_job_postings(new_jobs, conn, cursor)
-                            logger.info(
-                                f"Added {len(new_jobs)} new jobs out of {len(jobs)} total for {job_title}"
-                            )
-                        else:
-                            logger.info(f"No new jobs found for {job_title}")
+                            if new_jobs:
+                                insert_job_postings(new_jobs, conn, cursor)
+                                logger.info(
+                                    f"Added {len(new_jobs)} new jobs out of {len(jobs)} total for {job_title}"
+                                )
+                            else:
+                                logger.info(f"No new jobs found for {job_title}")
 
                         logger.info(
-                            f"Found {total_jobs} total jobs available on StepStone"
+                            f"StepStone reports {total_jobs} total available jobs for '{job_title}' in '{location}'"
                         )
                     else:
                         logger.warning(f"No jobs found for {job_title} in {location}")

@@ -55,6 +55,7 @@ def main(max_updates: int = 25, sleep_time: int = 60) -> None:
 
     try:
         while True:
+            # Create a new scraper instance for each batch
             scraper = StepStoneScraper(headless=True, login=True)
 
             try:
@@ -74,9 +75,14 @@ def main(max_updates: int = 25, sleep_time: int = 60) -> None:
                     for job_id in unscraped_jobs:
                         try:
                             logger.info(f"Fetching details for job ID: {job_id}")
+                            # Job IDs in the database include the full URL path
                             details = scraper.get_job_details(job_id)
 
-                            if details:
+                            if (
+                                details
+                                and "description" in details
+                                and details["description"]
+                            ):
                                 update_job_details(job_id, details, conn, cursor)
                                 successful_updates += 1
                                 logger.info(
@@ -84,7 +90,7 @@ def main(max_updates: int = 25, sleep_time: int = 60) -> None:
                                 )
                             else:
                                 logger.warning(
-                                    f"Could not retrieve details for job {job_id}"
+                                    f"No useful details retrieved for job {job_id}"
                                 )
 
                             # Add random delay between requests to appear more human-like

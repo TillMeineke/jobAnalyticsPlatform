@@ -74,7 +74,7 @@ class StepStoneScraper:
 
     def _login(self) -> bool:
         """Log in to StepStone account.
-        
+
         Returns:
             bool: True if login successful, False otherwise
         """
@@ -82,7 +82,9 @@ class StepStoneScraper:
         password = os.environ.get("STEPSTONE_PASSWORD")
 
         if not email or not password:
-            logger.warning("STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login")
+            logger.warning(
+                "STEPSTONE_EMAIL or STEPSTONE_PASSWORD not set, skipping login"
+            )
             return False
 
         logger.info("Logging in to StepStone...")
@@ -97,7 +99,7 @@ class StepStoneScraper:
                 logger.info("Accepted cookies")
             except (TimeoutException, NoSuchElementException):
                 logger.debug("No cookie banner found")
-                
+
             # StepStone has multiple login page variants, try different selectors
             email_selectors = ["#email", "#loginEmail", "[name='email']"]
             for selector in email_selectors:
@@ -115,7 +117,11 @@ class StepStoneScraper:
                 return False
 
             # Find and click continue button - try different selectors
-            continue_selectors = ["button[type='submit']", "[data-testid='button-continue']", ".at-login-email-button"]
+            continue_selectors = [
+                "button[type='submit']",
+                "[data-testid='button-continue']",
+                ".at-login-email-button",
+            ]
             for selector in continue_selectors:
                 try:
                     continue_button = WebDriverWait(self.driver, 3).until(
@@ -132,7 +138,7 @@ class StepStoneScraper:
 
             # Wait for password field to appear
             time.sleep(1)  # Small delay for page transition
-            
+
             # Try different selectors for password field
             password_selectors = ["#password", "#loginPassword", "[name='password']"]
             for selector in password_selectors:
@@ -150,7 +156,11 @@ class StepStoneScraper:
                 return False
 
             # Find and click login button - try different selectors
-            login_selectors = ["button[type='submit']", "[data-testid='button-login']", ".at-login-password-button"]
+            login_selectors = [
+                "button[type='submit']",
+                "[data-testid='button-login']",
+                ".at-login-password-button",
+            ]
             for selector in login_selectors:
                 try:
                     login_button = WebDriverWait(self.driver, 3).until(
@@ -167,48 +177,146 @@ class StepStoneScraper:
 
             # Wait for login to complete
             try:
-            jobs, related_terms = self._parse_search_results()
-
-            logger.info(f"Extracted {len(jobs)} job listings")
-            all_jobs.extend(jobs)
-            all_related_terms.extend(related_terms)
-
-            if (
-                self.max_runtime_seconds
-                and (time.time() - start_time) > self.max_runtime_seconds
-            ):
-                logger.info(
-                    f"Reached maximum runtime of {self.max_runtime_seconds} seconds"
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "[data-at='user-menu']")
+                    )
                 )
-                break
+                logger.info("Login successful")
+                return True
+            except TimeoutException:
+                logger.error("Login failed")
+                return False
+        except Exception as e:
+            logger.error(f"Error during login: {e}")
+            return False
 
-        return all_jobs, all_related_terms
+    def search(self, job_title: str, location: str) -> Tuple[List[Dict[str, str]], int]:
+        """Search for jobs on StepStone.
+
+        Args:
+            job_title: Job title to search for
+            location: Location to search in
+
+        Returns:
+            A tuple containing:
+                - A list of job listings dictionaries
+                - The total number of jobs found
+        """
+        start_time = time.time()
+
+        logger.info(f"Searching for {job_title} in {location}...")
+
+        # Build search URL with parameters
+        sort_param = "date" if self.sort_order == "desc" else "date_asc"
+        search_query = (
+            f"?what={quote(job_title)}&where={quote(location)}&sort={sort_param}"
+        )
+        url = f"{self.SEARCH_URL}{search_query}"
+
+        # Navigate to search page
+        self.driver.get(url)
+
+        # Accept cookies if prompted
+        try:
+            WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.ID, "ccmgt_explicit_accept"))
+            ).click()
+            logger.debug("Accepted cookies")
+        except (TimeoutException, NoSuchElementException):
+            logger.debug("No cookie banner found")
+
+        # Wait for search results to load
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, "[data-at='job-item']")
+                )
+            )
+        except TimeoutException:
+            logger.warning("Timed out waiting for search results to load")
+
+        # Extract total number of jobs
+        total_jobs = self._extract_total_jobs()
+
+        # Parse the search results and extract job listings
+        jobs, related_terms = self._parse_search_results()
+
+        logger.info(f"Found {len(jobs)} job listings for '{job_title}' in '{location}'")
+
+        return jobs, total_jobs
 
     def _extract_total_jobs(self) -> int:
         """Extract the total number of jobs found."""
         try:
-            # Wait for either the legacy or new selector
-            WebDriverWait(self.driver, 10).until(
-                lambda d: len(
-                    d.find_elements(
-                        By.CSS_SELECTOR,
-                        "[data-at='searchbar-jobs-count'], [data-at='found-jobs-count']",
-                    )
+            # Wait for page to load enough to find job count
+            time.sleep(2)
+
+            # Try more specific selectors for the job count
+            selectors = [
+                # Main search results header with count
+                "h1.at-search-composition-header-headline",
+                "h1.at-listing-search-header-title",
+                # Data attributes specifically for job counts
+                "[data-at='searchbar-jobs-count']",
+                "[data-at='found-jobs-count']",
+                # Fallback to any element containing "Treffer"
+                ".at-listing-search-header",
+            ]
+
+            for selector in selectors:
+                try:
+                    elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    for element in elements:
+                        total_text = element.text.strip()
+                        logger.debug(f"Found potential job count text: '{total_text}'")
+
+                        # Look for patterns like "1.251 Treffer" or "1251 Jobs"
+                        if "Treffer" in total_text or "Jobs" in total_text:
+                            # Try to extract the number part
+                            import re
+
+                            number_match = re.search(r"([\d.]+)", total_text)
+                            if number_match:
+                                count_str = number_match.group(1).replace(".", "")
+                                count = int(count_str)
+                                logger.info(f"Extracted job count: {count}")
+                                return count
+                except Exception as inner_e:
+                    logger.debug(f"Selector {selector} failed: {inner_e}")
+                    continue
+
+            # If all selectors fail, try scraping the title
+            try:
+                title = self.driver.title
+                if "Treffer" in title:
+                    import re
+
+                    number_match = re.search(r"([\d.]+)", title)
+                    if number_match:
+                        count_str = number_match.group(1).replace(".", "")
+                        count = int(count_str)
+                        logger.info(f"Extracted job count from title: {count}")
+                        return count
+            except Exception as e:
+                logger.debug(f"Title extraction failed: {e}")
+
+            # Last resort: try to use the number of job items found on the page
+            try:
+                job_elements = self.driver.find_elements(
+                    By.CSS_SELECTOR, "[data-at='job-item']"
                 )
-                > 0
-            )
+                if job_elements:
+                    logger.info(
+                        f"Using job elements count as fallback: {len(job_elements)}"
+                    )
+                    return len(job_elements)
+            except Exception as e:
+                logger.debug(f"Job elements count failed: {e}")
 
-            # Try both selectors
-            elements = self.driver.find_elements(
-                By.CSS_SELECTOR,
-                "[data-at='searchbar-jobs-count'], [data-at='found-jobs-count']",
-            )
-
-            if elements:
-                total_text = elements[0].text
-                # Extract number from text like "1.251 Treffer"
-                return int(total_text.split()[0].replace(".", ""))
+            logger.warning("Could not find job count with any method")
             return 0
+
         except Exception as e:
             logger.warning(f"Could not extract total jobs count: {e}")
             return 0
@@ -344,6 +452,129 @@ class StepStoneScraper:
             logger.warning(f"Error extracting related terms: {e}")
         return related_terms
 
+    def get_job_details(self, job_id: str) -> dict:
+        """Get detailed information about a job listing.
+
+        Args:
+            job_id: The job listing ID
+
+        Returns:
+            A dictionary containing detailed job information
+        """
+        logger.info(f"Getting details for job ID: {job_id}")
+
+        # Construct job URL
+        job_url = f"{self.BASE_URL}/{job_id}"
+
+        try:
+            # Navigate to job detail page
+            self.driver.get(job_url)
+
+            # Wait for job details to load
+            try:
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "[data-at='job-detail-description']")
+                    )
+                )
+            except TimeoutException:
+                logger.warning(
+                    f"Timed out waiting for job details page to load: {job_id}"
+                )
+                return {}
+
+            # Extract job description
+            description = ""
+            try:
+                description_element = self.driver.find_element(
+                    By.CSS_SELECTOR, "[data-at='job-detail-description']"
+                )
+                description = description_element.get_attribute("innerHTML")
+                logger.debug("Successfully extracted job description")
+            except NoSuchElementException:
+                logger.warning("Could not find job description element")
+
+            # Extract skills (if available)
+            skills = []
+            try:
+                skill_elements = self.driver.find_elements(
+                    By.CSS_SELECTOR, "[data-at='skills'] li"
+                )
+                skills = [skill.text.strip() for skill in skill_elements]
+                logger.debug(f"Extracted {len(skills)} skills")
+            except:
+                logger.debug("No skills section found")
+
+            # Extract company info
+            company_info = {}
+            try:
+                company_element = self.driver.find_element(
+                    By.CSS_SELECTOR, "[data-at='job-company-description']"
+                )
+                company_info["description"] = company_element.get_attribute("innerHTML")
+                logger.debug("Successfully extracted company description")
+            except NoSuchElementException:
+                logger.debug("No company description found")
+
+            # Extract requirements
+            requirements = {}
+            try:
+                sections = self.driver.find_elements(
+                    By.CSS_SELECTOR, ".at-section-text-with-header"
+                )
+                for section in sections:
+                    try:
+                        header = (
+                            section.find_element(By.CSS_SELECTOR, "h2, h3")
+                            .text.strip()
+                            .lower()
+                        )
+                        content = section.find_element(
+                            By.CSS_SELECTOR, "div"
+                        ).get_attribute("innerHTML")
+                        requirements[header] = content
+                        logger.debug(f"Extracted section: {header}")
+                    except:
+                        continue
+            except:
+                logger.debug("No requirement sections found")
+
+            # Extract metadata (employment type, location details, etc.)
+            metadata = {}
+            try:
+                meta_items = self.driver.find_elements(
+                    By.CSS_SELECTOR, "[data-at='job-detail-meta-box'] li"
+                )
+                for item in meta_items:
+                    try:
+                        text = item.text.strip()
+                        if ":" in text:
+                            key, value = text.split(":", 1)
+                            metadata[key.strip().lower()] = value.strip()
+                    except:
+                        continue
+                logger.debug(f"Extracted {len(metadata)} metadata items")
+            except:
+                logger.debug("No metadata found")
+
+            # Compile all job details
+            job_details = {
+                "job_id": job_id,
+                "url": job_url,
+                "description": description,
+                "skills": skills,
+                "company_info": company_info,
+                "requirements": requirements,
+                "metadata": metadata,
+                "scraped_at": datetime.now().isoformat(),
+            }
+
+            return job_details
+
+        except Exception as e:
+            logger.error(f"Error retrieving job details for {job_id}: {str(e)}")
+            return {}
+
     def close(self):
         """Close the web driver."""
         if self.driver:
@@ -394,10 +625,10 @@ def main():
     )
 
     try:
-        jobs, related_terms = scraper.search([args.job_title], args.location)
+        jobs, total_jobs = scraper.search(args.job_title, args.location)
 
         logger.info(
-            f"\nFound {len(jobs)} jobs for '{args.job_title}' in '{args.location}'"
+            f"\nFound {total_jobs} jobs for '{args.job_title}' in '{args.location}'"
         )
 
         if jobs:
