@@ -1,5 +1,5 @@
 id: job_scraper
-namespace: default
+namespace: company.team
 
 variables:
   job_title: data engineer
@@ -12,24 +12,16 @@ tasks:
     inputFiles:
       script.py: |
         import sys
-        import os
         sys.path.append("/app")
         from src.scrapers.stepstone import StepStoneScraper
 
-        job_title = "{{ job_title }}"
-        location = "{{ location }}"
-        max_pages = {{ max_pages }}
-
         scraper = StepStoneScraper()
         results = scraper.search(
-            job_titles=[job_title],
-            location=location,
-            max_pages=max_pages
+            job_titles=["{{ job_title }}"],
+            location="{{ location }}",
+            max_pages={{ max_pages }}
         )
         print(f"Found {len(results)} job listings")
-    docker:
-      image: job-analytics-python
-      network: job-analytics-network
 
   - id: load_to_database
     type: io.kestra.plugin.scripts.python.Script
@@ -39,12 +31,9 @@ tasks:
       script.py: |
         import sys
         sys.path.append("/app")
-        from src.dlt_pipelines.jobs_pipeline import run_pipeline
+        from src.dlt_pipelines.bronze_ingest import run_pipeline
 
         run_pipeline()
-    docker:
-      image: job-analytics-python
-      network: job-analytics-network
 
 triggers:
   - id: schedule

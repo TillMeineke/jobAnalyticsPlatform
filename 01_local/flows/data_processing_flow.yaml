@@ -1,5 +1,5 @@
 id: data_processor
-namespace: default
+namespace: company.team
 
 tasks:
   - id: transform_jobs
@@ -11,9 +11,6 @@ tasks:
         from src.dlt_pipelines.process_jobs import transform_jobs
 
         transform_jobs()
-    docker:
-      image: job-analytics-python
-      network: job-analytics-network
 
   - id: run_dbt
     type: io.kestra.plugin.scripts.shell.Commands
@@ -21,9 +18,6 @@ tasks:
       - transform_jobs
     commands:
       - cd /app/01_local/dbt && dbt run
-    docker:
-      image: job-analytics-python
-      network: job-analytics-network
 
 triggers:
   - id: schedule
