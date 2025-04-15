@@ -2,7 +2,7 @@
 services:
   # PostgreSQL database for all layers
   postgres:
-    image: postgres:15
+    image: postgres:latest
     container_name: job-analytics-postgres
     pull_policy: if_not_present
     environment:
