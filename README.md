@@ -1,148 +1,114 @@
-# 🚀 Job Analytics Platform
+# 🧑‍💻 Job Analytics Platform
 
-A comprehensive platform for job market analysis using modern data engineering techniques.
+## 🌟 Project Overview
 
-## 📋 Project Overview
+The Job Analytics Platform is a comprehensive data pipeline that collects, processes, and visualizes job market data to provide actionable insights for job seekers, employers, and educational institutions. By analyzing job postings from multiple platforms, this system reveals trends in demand for skills, salary ranges, and industry growth.
 
-This data engineering project aims to collect, process, and visualize job listings data from various platforms (StepStone, LinkedIn, Indeed, Xing) to provide insights into job market trends.
+## 🎯 Problem Statement
 
-### 🎯 Key Features
+In today's rapidly changing job market, there is a significant gap between the skills people have and those employers need. Job seekers struggle to identify which skills to develop, employers face challenges in understanding competitive compensation, and educational institutions lack data on which skills to prioritize in their curricula.
 
-- **Multi-source Data Collection**: Web scrapers for major job platforms
-- **End-to-end Data Pipeline**: Processing from raw data to analytics-ready datasets
-- **Modern Data Architecture**: Medallion architecture with Bronze 🥉, Silver 🥈, and Gold 🥇 layers
-- **Interactive Dashboards**: Job market analytics and visualization
-- **Cloud Deployment**: Infrastructure-as-Code for AWS deployment
+This platform solves these problems by:
+
+- Providing real-time data on in-demand skills across industries and regions
+- Analyzing salary trends for different positions and experience levels
+- Identifying emerging job categories and declining roles
+- Tracking changes in job requirements over time
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](docs/images/architecture_diagram.png)
+The project follows a medallion architecture pattern with three data layers:
 
-### Data Flow
+1. **Bronze Layer (Raw Data)** 🥉
+   - Job listings scraped from multiple platforms
+   - Minimal processing, focuses on data collection
 
-1. **Data Collection Layer**: Web scrapers collect job listings from multiple platforms
-2. **Bronze Layer** 🥉: Raw data stored as collected
-3. **Silver Layer** 🥈: Cleaned, deduplicated, and standardized data
-4. **Gold Layer** 🥇: Analytical models and aggregations for reporting
-5. **Visualization Layer**: Interactive dashboards for job market insights
+2. **Silver Layer (Processed Data)** 🥈
+   - Cleaned and standardized data
+   - Deduplicated job listings
+   - Structured information extraction
 
-### Technology Stack
+3. **Gold Layer (Analytics-Ready)** 🥇
+   - Aggregated metrics
+   - Calculated trends
+   - Analytics-ready tables
 
-- **Data Collection**: Python scrapers (Selenium, BeautifulSoup)
-- **Data Ingestion**: DLT (Data Load Tool)
-- **Data Transformation**: DBT (Data Build Tool)
+## 🛠️ Technology Stack
+
+- **Data Collection**: Python scrapers
+- **Data Processing**: dlt (data loading tool), dbt (data build tool)
 - **Workflow Orchestration**: Kestra
-- **Storage**: PostgreSQL
+- **Storage & Compute**:
+  - Local: PostgreSQL, Docker
+  - Cloud: AWS (S3, Athena, Glue)
+- **Infrastructure**: Terraform
 - **Visualization**: Metabase
-- **Infrastructure**: Docker (local), Terraform (AWS)
-- **CI/CD**: GitHub Actions
+- **Development**: Make, pytest, GitHub Actions
 
-## 🚦 Current Status
+## 🗂️ Project Structure
 
-The project is currently under active development. Key components in progress:
-
-- ✅ Project architecture and planning
-- 🔄 Local development environment setup
-- 🔄 Data scraping implementation
-- 🔄 Data pipeline development
-- ⏳ Dashboard creation
-- ⏳ Cloud deployment
-
-## 🛠️ Setup and Installation
-
-### Prerequisites
-
-- Python 3.9+
-- Docker and Docker Compose
-- AWS CLI (for cloud deployment)
-
-### Local Development
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/jobAnalyticsPlatform.git
-   cd jobAnalyticsPlatform
-   ```
-
-2. Set up the environment:
-
-   ```bash
-   make setup
-   ```
-
-3. Start the local services:
-
-   ```bash
-   make up
-   ```
-
-4. Access the components:
-   - Metabase: <http://localhost:3000>
-   - PostgreSQL: localhost:5432
-   - Kestra: <http://localhost:8080>
-
-### Running the Pipeline
-
-```bash
-make run-pipeline
+```
+jobAnalyticsPlatform/
+├── 01_local/               # Local development environment
+│   ├── docker/             # Docker configuration
+│   ├── scrapers/           # Data collection modules
+│   ├── dlt_pipelines/      # Data loading pipelines
+│   ├── dbt_models/         # Transformation models
+│   └── tests/              # Test suite
+├── 02_cloud/               # Cloud deployment
+│   ├── terraform/          # Infrastructure as Code
+│   ├── lambda/             # Serverless functions
+│   ├── dbt_models/         # Cloud-specific transformations
+│   └── tests/              # Cloud-specific tests
+├── docs/                   # Documentation
+├── Makefile                # Automation commands
+└── README.md               # Project overview
 ```
 
 ## 📊 Dashboard Examples
 
-The platform provides multiple dashboards for job market analysis:
+The platform provides visualizations including:
 
-- Job trends over time
-- Geographic distribution of opportunities
-- Skills in demand
-- Salary analysis
+- Job posting trends over time
+- Distribution of jobs by technology/skill
+- Salary variations by location
+- Growth rates of specific skills
+- Top hiring companies
 
-## 🧪 Testing
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Python 3.8+
+- AWS account (for cloud deployment)
+
+### Local Setup
+
+see [01_local/README.md](01_local/README.md) for detailed instructions.
+
+### Cloud Deployment
+
+1. Configure AWS credentials
+
+2. Deploy the infrastructure
 
 ```bash
-make test
+make deploy-cloud
 ```
 
-## 📂 Repository Structure
+## 📚 Documentation
 
-```
-jobAnalyticsPlatform/
-├── 01_local/                 # Local development configuration
-│   ├── docker/               # Docker configurations
-│   └── scripts/              # Local utility scripts
-├── 02_cloud/                 # Cloud deployment resources
-│   └── terraform/            # Terraform IaC for AWS
-├── pipelines/                # Data pipeline components
-│   ├── dlt_pipelines/        # Data ingestion pipelines
-│   └── dbt_models/           # Transformation models
-├── scrapers/                 # Job platform scrapers
-│   ├── stepstone/            # StepStone scraper
-│   ├── linkedin/             # LinkedIn scraper
-│   └── indeed/               # Indeed scraper
-├── workflows/                # Orchestration workflows
-│   └── kestra/               # Kestra flow definitions
-├── dashboards/               # Metabase dashboard exports
-├── docs/                     # Documentation
-└── examples/                 # Example code and references
-```
-
-## 📜 Documentation
+For more detailed information, please refer to:
 
 - [Project Plan](docs/project_plan.md)
-- [References and Examples](docs/references.md)
-- [Technical Details](docs/technical_details.md)
+- [Local Environment Setup](01_local/README.md)
+- [Cloud Deployment Guide](02_cloud/README.md)
 
-## 🔜 Next Steps
-
-1. Complete data scraping implementation
-2. Finalize data pipelines
-3. Create initial dashboards
-4. Implement cloud deployment
-
-## 💡 Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -1,0 +1,14 @@
+[0m10:39:35.675830 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106e27b10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106e9b210>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106ec5650>]}
+
+
+============================== 10:39:35.678996 | c1044f0c-1be8-4f94-99ff-d60f6d26b49a ==============================
+[0m10:39:35.678996 [info ] [MainThread]: Running with dbt=1.9.3
+[0m10:39:35.679359 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '.', 'version_check': 'True', 'warn_error': 'None', 'log_path': '/Users/tillmeineke/ML/jobAnalyticsPlatform/01_local/dbt/logs', 'fail_fast': 'False', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'log_format': 'default', 'introspect': 'True', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'target_path': 'None', 'invocation_command': 'dbt run --profiles-dir .', 'send_anonymous_usage_stats': 'True'}
+[0m10:39:35.681176 [error] [MainThread]: Encountered an error:
+Runtime Error
+  Could not find profile named 'job_analytics'
+[0m10:39:35.683121 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": false, "command_wall_clock_time": 0.052255332, "process_in_blocks": "0", "process_kernel_time": 0.165153, "process_mem_max_rss": "109461504", "process_out_blocks": "0", "process_user_time": 0.826722}
+[0m10:39:35.683378 [debug] [MainThread]: Command `dbt run` failed at 10:39:35.683324 after 0.05 seconds
+[0m10:39:35.683596 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x101250ed0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106ec4f90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x106ec4d10>]}
+[0m10:39:35.683800 [debug] [MainThread]: Flushing usage events
+[0m10:39:36.344353 [debug] [MainThread]: An error was encountered while trying to flush usage events

@@ -2,33 +2,45 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Install dependencies for web scraping (including Chrome for Selenium)
+# Install dependencies and Firefox
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     unzip \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
+    firefox-esr \
+    bzip2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install chromedriver
-RUN CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && wget -q -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip -d /usr/bin/ \
-    && rm /tmp/chromedriver.zip \
-    && chmod +x /usr/bin/chromedriver
+# Install GeckoDriver - using architecture detection with fallback to amd64
+RUN GECKO_DRIVER_VERSION="0.33.0" && \
+    ARCH=$(dpkg --print-architecture) && \
+    GECKODRIVER_URL="https://github.com/mozilla/geckodriver/releases/download/v${GECKO_DRIVER_VERSION}/geckodriver-v${GECKO_DRIVER_VERSION}-linux-" && \
+    if [ "$ARCH" = "arm64" ]; then \
+    wget -q "${GECKODRIVER_URL}aarch64.tar.gz" -O /tmp/geckodriver.tar.gz || \
+    wget -q "${GECKODRIVER_URL}x86_64.tar.gz" -O /tmp/geckodriver.tar.gz; \
+    elif [ "$ARCH" = "amd64" ]; then \
+    wget -q "${GECKODRIVER_URL}x86_64.tar.gz" -O /tmp/geckodriver.tar.gz; \
+    else \
+    echo "Unsupported architecture: $ARCH" && \
+    wget -q "${GECKODRIVER_URL}x86_64.tar.gz" -O /tmp/geckodriver.tar.gz; \
+    fi && \
+    mkdir -p /usr/local/bin && \
+    tar -xzf /tmp/geckodriver.tar.gz -C /usr/local/bin && \
+    chmod +x /usr/local/bin/geckodriver && \
+    rm /tmp/geckodriver.tar.gz
+
+# Set environment variables for Selenium to use Firefox
+ENV BROWSER_TYPE=firefox
+ENV GECKODRIVER_PATH=/usr/local/bin/geckodriver
+ENV PYTHONPATH=/app
+ENV MOZ_HEADLESS=1
 
 # Copy requirements file
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Set environment variables
-ENV PYTHONPATH=/app
 
 # Default command (will be overridden in docker-compose)
 CMD ["python", "-c", "import time; time.sleep(infinity)"]

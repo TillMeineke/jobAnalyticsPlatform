@@ -1,10 +1,10 @@
-version: "3"
-
+# Services for the Job Analytics Platform
 services:
   # PostgreSQL database for all layers
   postgres:
     image: postgres:15
     container_name: job-analytics-postgres
+    pull_policy: if_not_present
     environment:
       - POSTGRES_USER=jobanalytics
       - POSTGRES_PASSWORD=jobanalytics
@@ -25,9 +25,12 @@ services:
   # Metabase for dashboards
   metabase:
     image: metabase/metabase:latest
+    platform: linux/amd64 # Specify platform for Apple Silicon compatibility
     container_name: job-analytics-metabase
+    pull_policy: if_not_present
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       - MB_DB_TYPE=postgres
       - MB_DB_DBNAME=metabase
@@ -35,27 +38,61 @@ services:
       - MB_DB_USER=jobanalytics
       - MB_DB_PASS=jobanalytics
       - MB_DB_HOST=postgres
+      - MB_JETTY_PORT=3000
     ports:
       - "3000:3000"
     networks:
       - job-analytics-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Kestra for workflow orchestration
   kestra:
     image: kestra/kestra:latest-full
+    platform: linux/amd64 # Specify platform for Apple Silicon compatibility
     container_name: job-analytics-kestra
+    pull_policy: if_not_present
+    command: server standalone
+    user: "root"
+    volumes:
+      - kestra_data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
     ports:
       - "8080:8080"
+      - "8081:8081"
     environment:
-      - KESTRA_CONFIGURATION=prod
-      - KESTRA_URL=http://localhost:8080
-      - KESTRA_JDBC_URL=jdbc:postgresql://postgres:5432/kestra
-      - KESTRA_JDBC_USERNAME=jobanalytics
-      - KESTRA_JDBC_PASSWORD=jobanalytics
-    depends_on:
-      - postgres
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: jobanalytics
+            password: jobanalytics
+        kestra:
+          tutorialFlows:
+            enabled: false
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
     networks:
       - job-analytics-network
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # Python service for running scripts
   python:
@@ -68,7 +105,8 @@ services:
     networks:
       - job-analytics-network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     command: "tail -f /dev/null" # Keep container running
 
 networks:
@@ -78,3 +116,5 @@ networks:
 volumes:
   postgres_data:
     name: job-analytics-postgres-data
+  kestra_data:
+    name: job-analytics-kestra-data

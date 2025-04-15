@@ -161,3 +161,44 @@ Web Scraping → SQLite (Bronze) → Transformation → PostgreSQL (Silver) → 
 
 4. **Rate limiting**
    - Increase sleep time between requests: `--sleep-time 120`
+
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/jobAnalyticsPlatform.git
+cd jobAnalyticsPlatform
+```
+
+2. Setup the environment
+
+```bash
+make setup
+```
+
+3. Start the local environment
+
+```bash
+make start-local
+```
+
+4. Run the pipeline
+
+```bash
+# Run the job scraper for data analytics jobs in Hamburg
+python 01_local/scrapers/job_scraper.py --job-type "data analytics" --location "hamburg"
+
+# Run for specific job types
+python 01_local/scrapers/job_scraper.py --job-type "data scientist" --location "hamburg"
+python 01_local/scrapers/job_scraper.py --job-type "data engineer" --location "hamburg"
+python 01_local/scrapers/job_scraper.py --job-type "machine learning engineer" --location "hamburg"
+
+# Process data through the pipeline
+python 01_local/dlt_pipelines/process_jobs.py
+```
+
+5. Access the dashboard
+
+```
+http://localhost:3000
+```

@@ -1,119 +1,71 @@
-.PHONY: setup-local run-local test-local clean-local init-db run-pipeline test-scraper test-scraper-detail test-scraper-asc test-scraper-limit search-jobs fetch-details setup-cloud run-cloud test-cloud clean-cloud validate-cloud estimate-cost all help install
+# Job Analytics Platform Makefile
 
-# Define variables for paths and commands
+.PHONY: setup install scrape-jobs process-jobs run-pipeline clean help
+
+# Variables
 PYTHON := python
+PIP := pip
+DATA_DIR := data
 
 # Default target
-all: setup-local
-
-# Installation target
-install:
-	@echo "🔧 Installing Python dependencies..."
-	$(PYTHON) -m pip install -r requirements.txt
-
-# Local environment commands
-setup-local: install
-	@echo "🚀 Setting up local development environment..."
-	@cd 01_local && docker-compose build
-
-run-local:
-	@echo "🚀 Starting local services..."
-	@cd 01_local && docker-compose up -d
-
-test-local:
-	@echo "🧪 Running tests for local environment..."
-	PYTHONPATH=$(CURDIR) pytest 01_local/tests
-
-clean-local:
-	@echo "🧹 Cleaning local environment..."
-	@cd 01_local && docker-compose down -v
-
-init-db:
-	@echo "💾 Initializing database schemas..."
-	@cd 01_local && docker-compose run --rm app python -m src.scripts.init_db
-
-run-pipeline:
-	@echo "⚙️ Running data pipeline..."
-	@cd 01_local && docker-compose run --rm app python -m src.scripts.run_pipeline
-
-clean-bin:
-	@echo "🧹 Removing bin directory..."
-	@rm -rf $(CURDIR)/bin
-
-# Scraper test commands
-test-scraper:
-	@echo "🔍 Testing StepStone scraper..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.stepstone --job-title "Data Engineer" --location "Deutschland" --max-results 10 --headless
-
-test-scraper-detail:
-	@echo "🔍 Testing StepStone scraper with job details..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.stepstone $(ARGS)
-
-test-scraper-asc:
-	@echo "🔍 Testing StepStone scraper with ascending sort..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.stepstone --job-title "Data Engineer" --location "Deutschland" --max-results 10 --headless --sort asc
-
-test-scraper-limit:
-	@echo "🔍 Testing StepStone scraper with runtime limit..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.stepstone --job-title "Data Engineer" --location "Deutschland" --max-runtime 30 --headless
-
-# Continuous scraping commands
-search-jobs:
-	@echo "🔄 Starting job search retriever..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.search_retriever $(ARGS)
-
-fetch-details:
-	@echo "📋 Starting job details retriever..."
-	PYTHONPATH=$(CURDIR) $(PYTHON) -m 01_local.src.scrapers.details_retriever $(ARGS)
-
-# Cloud environment commands
-setup-cloud:
-	@echo "☁️ Setting up cloud environment..."
-	@cd 02_cloud/terraform && terraform init
-
-run-cloud:
-	@echo "☁️ Deploying to cloud..."
-	@cd 02_cloud/terraform && terraform apply -auto-approve
-
-test-cloud:
-	@echo "🧪 Running tests for cloud environment..."
-	@cd 02_cloud/tests && pytest
-
-clean-cloud:
-	@echo "🧹 Destroying cloud resources..."
-	@cd 02_cloud/terraform && terraform destroy -auto-approve
-
-validate-cloud:
-	@echo "✅ Validating cloud deployment..."
-	@cd 02_cloud/terraform && terraform validate
-
-estimate-cost:
-	@echo "💰 Estimating AWS costs..."
-	@cd 02_cloud/terraform && terraform plan -detailed-exitcode
+.DEFAULT_GOAL := help
 
 # Help command
 help:
-	@echo "📋 Available commands:"
-	@echo "  install             - Install Python dependencies"
-	@echo "  setup-local         - Set up local development environment"
-	@echo "  run-local           - Start local services"
-	@echo "  test-local          - Run tests for local environment"
-	@echo "  clean-local         - Clean local environment"
-	@echo "  clean-bin           - Remove bin directory containing geckodriver"
-	@echo "  init-db             - Initialize database schemas"
-	@echo "  run-pipeline        - Run data pipeline"
-	@echo "  test-scraper        - Test basic job scraper"
-	@echo "  test-scraper-detail - Test job details scraper with custom arguments"
-	@echo "  test-scraper-asc    - Test scraper with ascending sort order"
-	@echo "  test-scraper-limit  - Test scraper with runtime limit"
-	@echo "  search-jobs         - Start job search retriever with custom arguments"
-	@echo "  fetch-details       - Start job details retriever with custom arguments"
-	@echo "  setup-cloud         - Set up cloud environment"
-	@echo "  run-cloud           - Deploy to cloud"
-	@echo "  test-cloud          - Run tests for cloud environment"
-	@echo "  clean-cloud         - Destroy cloud resources"
-	@echo "  validate-cloud      - Validate cloud deployment"
-	@echo "  estimate-cost       - Estimate AWS costs"
+	@echo "🧑‍💻 Job Analytics Platform"
 	@echo ""
-	@echo "Example usage:"
-	@echo "  make test-scraper-detail ARGS=\"--job-title 'Data Engineer' --location 'Deutschland' --first-n 5\""
+	@echo "Available commands:"
+	@echo "  make setup           - Set up development environment"
+	@echo "  make install         - Install dependencies"
+	@echo "  make scrape-jobs     - Run job scraper (prompts for job type and location)"
+	@echo "  make process-jobs    - Process job data through the pipeline"
+	@echo "  make run-pipeline    - Run the complete pipeline (scrape + process)"
+	@echo "  make clean           - Remove generated files"
+
+# Setup development environment
+setup: install
+	@echo "Setting up development environment..."
+	@mkdir -p $(DATA_DIR)/bronze $(DATA_DIR)/silver $(DATA_DIR)/gold
+
+# Install dependencies
+install:
+	@echo "Installing dependencies..."
+	$(PIP) install pandas colorama requests beautifulsoup4
+
+# Run job scraper for a specific job type and location
+scrape-jobs:
+	@echo "Running job scraper..."
+	@read -p "Enter job type (e.g., data analytics, data scientist): " job_type; \
+	read -p "Enter location (e.g., hamburg): " location; \
+	$(PYTHON) 01_local/scrapers/job_scraper.py --job-type "$$job_type" --location "$$location"
+
+# Run predefined job scrapers for common job types in Hamburg
+scrape-hamburg-jobs:
+	@echo "Running job scrapers for Hamburg..."
+	$(PYTHON) 01_local/scrapers/job_scraper.py --job-type "data analytics" --location "hamburg"
+	$(PYTHON) 01_local/scrapers/job_scraper.py --job-type "data scientist" --location "hamburg"
+	$(PYTHON) 01_local/scrapers/job_scraper.py --job-type "data engineer" --location "hamburg"
+	$(PYTHON) 01_local/scrapers/job_scraper.py --job-type "machine learning engineer" --location "hamburg"
+
+# Process job data
+process-jobs:
+	@echo "Processing job data..."
+	$(PYTHON) 01_local/dlt_pipelines/process_jobs.py
+
+# Run complete pipeline
+run-pipeline: scrape-jobs process-jobs
+	@echo "Pipeline execution completed!"
+
+# Clean generated files
+clean:
+	@echo "Cleaning generated files..."
+	@echo "WARNING: This will remove all data files. Are you sure? (y/n)"
+	@read -p "" confirm; \
+	if [ "$$confirm" = "y" ]; then \
+		rm -f $(DATA_DIR)/bronze/*.json; \
+		rm -f $(DATA_DIR)/silver/*.csv; \
+		rm -f $(DATA_DIR)/gold/*.csv; \
+		echo "All data files have been removed."; \
+	else \
+		echo "Operation cancelled."; \
+	fi

@@ -1,0 +1,63 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: jobanalytics_postgres
+    environment:
+      POSTGRES_USER: jobanalytics
+      POSTGRES_PASSWORD: jobanalytics
+      POSTGRES_DB: jobanalytics
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobanalytics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+
+  metabase:
+    image: metabase/metabase:latest
+    platform: linux/amd64  # Specify platform for Apple Silicon compatibility
+    container_name: jobanalytics_metabase
+    depends_on:
+      - postgres
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: jobanalytics
+      MB_DB_PASS: jobanalytics
+      MB_DB_HOST: postgres
+      JAVA_OPTS: "-Xmx1g -Djava.awt.headless=true"
+      MB_EMOJI_IN_LOGS: "true"
+      MB_APPLICATION_NAME: "Job Analytics Platform"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+        reservations:
+          memory: 1G
+
+volumes:
+  postgres_data:
+    driver: local

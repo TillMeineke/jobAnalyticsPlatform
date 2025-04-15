@@ -8,15 +8,17 @@ After major changes or new feature implementations (only one single step at a ti
 
 - Focus on the areas of code relevant to the task.
 - Do not touch code that is unrelated to the task.
+- Do not create jupyter notebooks, for debugging or testing, unless explicitly requested. We can use bash.
 - Write thorough tests for all major functionality.
 - Avoid making major changes to patterns and architecture unless explicitly instructed.
 - Always consider how changes might affect other methods and areas of the codebase.
+- Always give bash command with, the right directory, e.g. `cd 01_local/docker` before running the command.
 
 ## Technical Stack
 
 - **Backend**: Python
 - **Frontend**: Metabase
-- **Development Tools**: Jupyter, VSCode, Git, Docker, Kubernetes, Kestra, dbt, dlt, AWS
+- **Development Tools**: VSCode, Git, Docker, Kubernetes, Kestra, dbt, dlt, AWS
 - **Databases**: SQL databases, separate environments for dev, test, and prod following bronze 🥉, silver 🥈, gold 🥇 naming conventions.
 - **Testing**: Python tests
 - **Build Automation**: Use `make`
@@ -33,7 +35,7 @@ After major changes or new feature implementations (only one single step at a ti
 - Create README.md files in subdirectories if they don't exist, and link them in the main README.md file. Use emojis to make documentation more engaging.
 - Do not create a cleaner structure with a single src directory at the project root level.
 - Add comments and docstrings to explain non-obvious code.
-- Avoid writing scripts in files unless they are reusable.
+- Avoid writing scripts in files unless they are reusable. THIS IS VERY IMPORTANT.
 - Refactor files exceeding 200-300 lines of code.
 - Before moving folders (and content), check if files already exist in the target folder. If they do, consider merging them instead of moving.
 - Use mock data only for tests, never for dev or prod.

@@ -1,0 +1,182 @@
+[
+  {
+    "job_id": "03ccbb40-d700-47da-8bdd-19f3d33be695",
+    "title": "Data Engineer",
+    "company": "Harbor Insights",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/03ccbb40-d700-47da-8bdd-19f3d33be695",
+    "posting_date": "2025-04-03",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:02.651041"
+  },
+  {
+    "job_id": "cf9e3b60-7b90-4cdb-a3b3-61c289b79967",
+    "title": "Data Engineer",
+    "company": "Hanseatic ML",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/cf9e3b60-7b90-4cdb-a3b3-61c289b79967",
+    "posting_date": "2025-03-15",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:02.753294"
+  },
+  {
+    "job_id": "49d86f6f-d115-4387-a0a4-f95e1f38f188",
+    "title": "Data Engineer",
+    "company": "TechCorp GmbH",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/49d86f6f-d115-4387-a0a4-f95e1f38f188",
+    "posting_date": "2025-03-16",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:02.860716"
+  },
+  {
+    "job_id": "69892c9d-9075-4330-aacf-d4d61874dddd",
+    "title": "Data Engineer",
+    "company": "TechCorp GmbH",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/69892c9d-9075-4330-aacf-d4d61874dddd",
+    "posting_date": "2025-03-22",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:02.965785"
+  },
+  {
+    "job_id": "93c2f6ed-89c7-47b2-9823-1ae6cc966041",
+    "title": "Data Engineer",
+    "company": "Port Technology Partners",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/93c2f6ed-89c7-47b2-9823-1ae6cc966041",
+    "posting_date": "2025-03-21",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.066601"
+  },
+  {
+    "job_id": "0ed3f49e-0253-4afc-b555-f8ac004c314a",
+    "title": "Data Engineer",
+    "company": "Elbe Data Systems",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/0ed3f49e-0253-4afc-b555-f8ac004c314a",
+    "posting_date": "2025-04-13",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.170104"
+  },
+  {
+    "job_id": "deab65b5-2751-458c-97e6-b9b5141b83be",
+    "title": "Data Engineer",
+    "company": "Hamburg Digital",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/deab65b5-2751-458c-97e6-b9b5141b83be",
+    "posting_date": "2025-03-18",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.273503"
+  },
+  {
+    "job_id": "f10ddb0e-75b2-43ea-b3e2-55dc75c0c17d",
+    "title": "Data Engineer",
+    "company": "Elbe Data Systems",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/f10ddb0e-75b2-43ea-b3e2-55dc75c0c17d",
+    "posting_date": "2025-03-29",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.375881"
+  },
+  {
+    "job_id": "ed19a038-ee22-4a70-a284-6dd048b65b6f",
+    "title": "Data Engineer",
+    "company": "DataAnalytics AG",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/ed19a038-ee22-4a70-a284-6dd048b65b6f",
+    "posting_date": "2025-04-04",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.481027"
+  },
+  {
+    "job_id": "b74157f7-4182-401d-90f5-eef709d88cc4",
+    "title": "Data Engineer",
+    "company": "Port Technology Partners",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/b74157f7-4182-401d-90f5-eef709d88cc4",
+    "posting_date": "2025-04-09",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.585725"
+  },
+  {
+    "job_id": "376b6f88-0126-4315-abfd-a5759f1d1fdb",
+    "title": "Data Engineer",
+    "company": "Port Technology Partners",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/376b6f88-0126-4315-abfd-a5759f1d1fdb",
+    "posting_date": "2025-04-08",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.690674"
+  },
+  {
+    "job_id": "861a5f5c-2794-4e8b-b2d9-850eb726a1b7",
+    "title": "Data Engineer",
+    "company": "Elbe Data Systems",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/861a5f5c-2794-4e8b-b2d9-850eb726a1b7",
+    "posting_date": "2025-04-12",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.795923"
+  },
+  {
+    "job_id": "0121d4a8-1754-4859-9a50-e34725cea989",
+    "title": "Data Engineer",
+    "company": "Hamburg Digital",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/0121d4a8-1754-4859-9a50-e34725cea989",
+    "posting_date": "2025-03-24",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:03.901244"
+  },
+  {
+    "job_id": "686950a2-81f5-4e2d-a990-7c9c8c17ffa4",
+    "title": "Data Engineer",
+    "company": "Northern Data",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/686950a2-81f5-4e2d-a990-7c9c8c17ffa4",
+    "posting_date": "2025-04-12",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:04.002616"
+  },
+  {
+    "job_id": "f4348ed3-3125-403c-9f14-a142060c87a7",
+    "title": "Data Engineer",
+    "company": "German Tech Solutions",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/f4348ed3-3125-403c-9f14-a142060c87a7",
+    "posting_date": "2025-04-04",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:04.104315"
+  },
+  {
+    "job_id": "8e067c39-8643-48ec-825c-b1bf7a4eb244",
+    "title": "Data Engineer",
+    "company": "Harbor Insights",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/8e067c39-8643-48ec-825c-b1bf7a4eb244",
+    "posting_date": "2025-04-11",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:04.208400"
+  },
+  {
+    "job_id": "269d990a-53bf-409f-891d-6fe5322b02b5",
+    "title": "Data Engineer",
+    "company": "TechCorp GmbH",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/269d990a-53bf-409f-891d-6fe5322b02b5",
+    "posting_date": "2025-03-30",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:04.313591"
+  },
+  {
+    "job_id": "d22abea6-6864-4af3-a514-5b149f51a705",
+    "title": "Data Engineer",
+    "company": "Maritime Analytics",
+    "location": "Hamburg, Germany",
+    "url": "https://example.com/jobs/d22abea6-6864-4af3-a514-5b149f51a705",
+    "posting_date": "2025-03-21",
+    "description": "We are looking for an experienced Data Engineer to join our team.",
+    "scrape_timestamp": "2025-04-14T19:30:04.414539"
+  }
+]

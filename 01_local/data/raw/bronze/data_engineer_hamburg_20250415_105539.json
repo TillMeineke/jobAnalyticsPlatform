@@ -1,0 +1,680 @@
+[
+  {
+    "job_id": "12282896",
+    "job_title": "Data Engineer & Steward (d/w/m)",
+    "job_url": "/stellenangebote--Data-Engineer-Steward-d-w-m-Hamburg-Unilever-Deutschland-Holding-GmbH--12282896-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.933672",
+    "company_name": "Unilever Deutschland Holding GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 4 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "Unilever Deutschland Holding GmbH",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Einrichtung eines lokalen Data Warehouse / Data Lake einschlie\u00dflich der Administration und Instandhaltung",
+      "Kontinuierliche Optimierung der Datenstruktur, Vorverarbeitung und Pipelines",
+      "\u00dcberwachung der Kosten und Implementierung von Ma\u00dfnahmen zu deren Optimierung",
+      "Verwaltung und Administration von Datenpoolsystemen (Datenvalidierung, Benutzer- und Stammdatenverwaltung, Datenbereinigung, Prozessautomatisierung)",
+      "Sicherstellung sauberer, genauer und integrierter Daten (einschlie\u00dflich SSD) und Verwaltung der Kontakte zu Datenlieferanten",
+      "Erste*r Ansprechpartner*in bei Datenfragen \u2013 insbesondere als Gegenpart f\u00fcr Data Analyst*innen in deinem und in globalen Teams",
+      "Unterst\u00fctzung der lokalen Marketing- und Vertriebsteams beim Hochladen ihrer Daten in das lokale Data Warehouse / Data Lake",
+      "Integration der aus verschiedenen Quellen bereitgestellten Daten unter Verwendung des weltweit entwickelten Matching-Algorithmus und der lokal bereitgestellten Zusammenf\u00fchrungsregeln.",
+      "Einrichtung von Aktivit\u00e4ten und neuen Prozessen zur Erh\u00f6hung der Datenqualit\u00e4t und -quantit\u00e4t, z. B. durch Erh\u00f6hung der Profilierungsrate von Kunden",
+      "Unterst\u00fctzung beim Aufbau von Pipelines, die die lokalen Daten an die globale Datenplattform und umgekehrt liefern.",
+      "Entwicklung und Etablierung einer zukunftssicheren und schlanken Datenflussarchitektur (Definition prim\u00e4rer Systeme, Vermeidung von Datenverdopplung, Vermeidung von Datenkonflikten usw.)",
+      "Erstellung neuer KPIs, Berechnungen und Datenabgleiche in Zusammenarbeit mit Data Analyst*innen, um neue Einblicke in Dashboards und Analysen zu erm\u00f6glichen",
+      "Erstellung einer Architektur, die die integrierten Daten f\u00fcr lokale Stakeholder zug\u00e4nglich macht und deren Leben erleichtert",
+      "Sicherstellung der Sicherheit der lokalen Plattform und Einhaltung gesetzlicher Vorschriften."
+    ]
+  },
+  {
+    "job_id": "12287895",
+    "job_title": "Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Data-Engineer-m-w-d-Frankfurt-Koeln-Hamburg-Stuttgart-Muenchen-Berlin-Dresden-INFOMOTION-GmbH--12287895-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.933853",
+    "company_name": "INFOMOTION GmbH",
+    "location": "Frankfurt, K\u00f6ln, Hamburg, Stuttgart, M\u00fcnchen, Berlin, Dresden",
+    "posting_date": "vor 4 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "INFOMOTION GmbH",
+      "Frankfurt, K\u00f6ln, Hamburg, Stuttgart, M\u00fcnchen, Berlin, Dresden",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Du tauchst in die Gesch\u00e4ftsprozesse und Methoden unserer Kunden ein und erkennst die fachlichen Anforderungen und setzt diese im Datenmanagement um",
+      "Du ber\u00e4tst eigenst\u00e4ndig und kompetent im Kontext von Datenmanagement, Data Warehousing & Data Lake.",
+      "Du konzipierst und realisierst mithilfe von Snowflake moderne Cloud Datenplattformen",
+      "Als (Teil-)Projektleiter oder Fachexperte: Du \u00fcbernimmst Verantwortung f\u00fcr den Kunden und tr\u00e4gst ma\u00dfgeblich zum Projekterfolg bei",
+      "Im Team unterst\u00fctzt Du bei der Einarbeitung und Betreuung von Consultants",
+      "INFOMOTION GmbH",
+      "Frankfurt, K\u00f6ln, Hamburg, Stuttgart, M\u00fcnchen, Berlin, Dresden",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Du tauchst in die Gesch\u00e4ftsprozesse und Methoden unserer Kunden ein und erkennst die fachlichen Anforderungen und setzt diese im Datenmanagement um",
+      "Du ber\u00e4tst eigenst\u00e4ndig und kompetent im Kontext von Datenmanagement, Data Warehousing & Data Lake.",
+      "Du konzipierst und realisierst mithilfe von Snowflake moderne Cloud Datenplattformen",
+      "Als (Teil-)Projektleiter oder Fachexperte: Du \u00fcbernimmst Verantwortung f\u00fcr den Kunden und tr\u00e4gst ma\u00dfgeblich zum Projekterfolg bei",
+      "Im Team unterst\u00fctzt Du bei der Einarbeitung und Betreuung von Consultants",
+      "Abgeschlossenes IT-orientiertes Studium oder eine klassische Berufsausbildung",
+      "Mehrj\u00e4hrige Consulting Praxis im Cloud-, Data Warehouse-, Data Management- oder Data Lake-Umfeld",
+      "Gute Kenntnisse in der Konzeption, Architektur, Entwicklung und Implementierung von Cloud Datenplattformen (Data Warehousing, Data Lake oder Data Lakehouse) auf den Hyper Scalern AWS, Azure, GCP im Zusammenspiel mit Snowflake",
+      "Modellierungserfahrung (z.B. Data Vault 2.0)",
+      "Und dar\u00fcber hinaus? \u00dcberzeugst Du uns als qualit\u00e4tsbewusster Teamplayer mit analytischer Probleml\u00f6sungskompetenz, Eigeninitiative und Umsetzungsst\u00e4rke",
+      "Du f\u00fchrst fachliche Dialoge ebenso sicher in Deutsch wie in Englisch",
+      "Flexible Arbeitsmodelle:Hochflexible (hybride) Arbeitszeit-/ortsmodelle, 30 Tage Urlaub und (Integrated) Sabbatical-M\u00f6glichkeiten sorgen f\u00fcr eine ausgewogene Work-Life-Balance.",
+      "Transparente Verg\u00fctung und Karrierechancen: Profitiere von einem fairen und transparenten Verg\u00fctungsmodell sowie ausgezeichneten Karrierechancen.",
+      "Respektvolles Arbeitsumfeld:Erlebe einen respektvollen und fairen Umgang miteinander, der das Wohlbefinden und die Zufriedenheit unserer Mitarbeiterinnen und Mitarbeiter f\u00f6rdert.",
+      "Kontinuierliche Weiterbildung und intensiver Wissensaustausch:Nutze unser exzellentes Wissensmanagement, unsere Academy Trainings oder lerne on the Job, um Deine F\u00e4higkeiten kontinuierlich auszubauen und Dein Wissen mit anderen zu teilen.",
+      "Zeit f\u00fcr berufliche und pers\u00f6nliche Entwicklung:Verwende unsere Grow your Talent Platform, um Deine berufliche sowie pers\u00f6nliche Entwicklung auf das n\u00e4chste Level zu heben, um Deine Talente bei uns zu entfalten.",
+      "Gesundheitsf\u00f6rderung und INFOMOTION Spirit:Entdecke Angeboten f\u00fcr Dein physisches und mentales Wohlbefinden. Lerne die INFOMOTION Kultur kennen, die Geselligkeit, Humor und Toleranz vereint."
+    ]
+  },
+  {
+    "job_id": "11713465",
+    "job_title": "Data Engineer* / Machine Learning Engineer*",
+    "job_url": "/stellenangebote--Data-Engineer-Machine-Learning-Engineer-Karlsruhe-Koeln-Muenchen-Hamburg-Stuttgart-Pforzheim-Berlin-Erlangen-inovex-GmbH--11713465-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934020",
+    "company_name": "inovex GmbH",
+    "location": "Karlsruhe, K\u00f6ln, M\u00fcnchen, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen",
+    "posting_date": "vor 2 Wochen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "inovex GmbH",
+      "Karlsruhe, K\u00f6ln, M\u00fcnchen, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 2 Wochen",
+      "Gehalt anzeigen",
+      "Gemeinsam mit deinem agilen, cross-funktionalen Projektteam hilfst du unseren Kunden aus unterschiedlichen Branchen, ihre Daten nutzbar zu machen.",
+      "Dein Job beginnt nicht erst mit der Entwicklung von Datenprojekten: Du stimmst dich eng mit unseren Kunden ab und ber\u00e4tst sie in Bezug auf die technische Machbarkeit und die konkrete Umsetzung ihrer digitalen Innovationen.",
+      "Als Data Engineer* / Machine Learning Engineer* gestaltest du das Fundament f\u00fcr sp\u00e4tere Analysen sowie data-driven Services und entwickelst skalierbare, robuste und wartbare Architekturen.",
+      "Du konzipierst und implementierst Datenplattformen, Datenverarbeitungsprozesse und Daten-Services als hochskalierbare, verteilte Systeme in der Cloud, on premises oder hybrid.",
+      "Du bist Expert:in f\u00fcr die Ende-zu-Ende-Integration von Daten-/ETL-Pipelines und das Deployment von Machine-Learning-Modellen bis hin zur Bereitstellung der Ergebnisse innerhalb bestehender IT-Systeme."
+    ]
+  },
+  {
+    "job_id": "12209434",
+    "job_title": "Data Engineer (all genders)",
+    "job_url": "/stellenangebote--Data-Engineer-all-genders-Frankfurt-am-Main-Berlin-Hamburg-Duesseldorf-Muenchen-Stuttgart-PRODYNA-SE--12209434-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934170",
+    "company_name": "PRODYNA SE",
+    "location": "Frankfurt am Main, Berlin, Hamburg, D\u00fcsseldorf, M\u00fcnchen, Stuttgart",
+    "posting_date": "vor 4 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "PRODYNA SE",
+      "Frankfurt am Main, Berlin, Hamburg, D\u00fcsseldorf, M\u00fcnchen, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Du bist verantwortlich f\u00fcr das Design und die Konzeption moderner Datenplattformen, die skalierbar hohe Datenmengen aus Systemen integrieren und verarbeiten",
+      "Du \u00fcbernimmst die Planung und Implementierung mit modernen Frameworks sowie Backendservices zur Datenbereitstellung und -nutzung",
+      "Du verantwortest selbst\u00e4ndig die Optimierung der Pipelines sowie die Integration in Cloud Plattformen",
+      "Du implementierst Werkzeuge und L\u00f6sungen zur Sicherung der Datenqualit\u00e4t, zur Datenbereinigung und zur Bereitstellung aggregierter Daten f\u00fcr Analysen",
+      "Die Aufnahme sowie Spezifikation von Anforderungen unserer Kunden geh\u00f6rt ebenso in dein Aufgabengebiet",
+      "PRODYNA SE",
+      "Frankfurt am Main, Berlin, Hamburg, D\u00fcsseldorf, M\u00fcnchen, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Du bist verantwortlich f\u00fcr das Design und die Konzeption moderner Datenplattformen, die skalierbar hohe Datenmengen aus Systemen integrieren und verarbeiten",
+      "Du \u00fcbernimmst die Planung und Implementierung mit modernen Frameworks sowie Backendservices zur Datenbereitstellung und -nutzung",
+      "Du verantwortest selbst\u00e4ndig die Optimierung der Pipelines sowie die Integration in Cloud Plattformen",
+      "Du implementierst Werkzeuge und L\u00f6sungen zur Sicherung der Datenqualit\u00e4t, zur Datenbereinigung und zur Bereitstellung aggregierter Daten f\u00fcr Analysen",
+      "Die Aufnahme sowie Spezifikation von Anforderungen unserer Kunden geh\u00f6rt ebenso in dein Aufgabengebiet",
+      "Du verf\u00fcgst \u00fcber mehrj\u00e4hrige Berufserfahrung in der Softwareentwicklung, insbesondere in datengetriebenen Projekten, im Bereich Data Warehousing oder im Aufbau von Datenplattformen",
+      "Du besitzt Kenntnisse in der Entwicklung von Pipelines und Datenintegrationsstrecken (ELT/ETL, Azure Data Factory, DBT, Stored Procedures oder \u00e4hnliche Tools)",
+      "Du kennst dich mit Datenmodellierung aus und hast je nach Bereich Erfahrung mit Data Vault, Data Mesh, Kimball oder Inmon",
+      "Du bringst Kenntnisse in Big Data-Architekturen und -Technologien (Databricks, Microsoft Fabric, Azure Synapse, SQL & NoSQL Datenbanken, Spark, Kafka, Elastic, etc.) und Programmierung (Python, Scala, Java etc.) mit",
+      "Kenntnisse in den folgenden Bereichen sind von Vorteil: Cloud (Azure oder AWS), Data Science oder Business Intelligence (Reporting Tools)",
+      "Du denkst wie ein Engineer: Du planst Architektur und Software vorausschauend damit diese automatisiert, stabil und wartungsf\u00e4hig sind",
+      "Flie\u00dfende Deutsch- und gute Englischkenntnisse runden dein Profil ab",
+      "F\u00fcrs Techie-Herz:Abwechslungsreiche Technologie Stacks, Projekte und TechTalks",
+      "Newcomer Days:Kennenlernen und Netzwerken mit anschlie\u00dfendem Mentoring-Programm",
+      "Hardware:Freie Wahl von Laptop und Smartphone",
+      "Teamwork:Flache Hierarchien & regelm\u00e4\u00dfige Teambuilding Events",
+      "Work-Life-Balance:30 Tage Urlaub, flexible Arbeitszeitmodelle & Mobile Working",
+      "PRODYNA Academy:Zahlreiche Weiterbildungen plus 400 Euro/Jahr f\u00fcr Online-Trainings deiner Wahl",
+      "Job-Ticket oder Job-Bike:Du hast die Wahl",
+      "Sportbegeisterte:Unternehmensinterne Sport-Challenge, Gesundheitsmanagement und kostenlose Mitgliedschaft bei EGYM Wellpass",
+      "Rundum versorgt:Umzugs- und Kindergartenzuschuss, betriebliche Altersvorsorge",
+      "Hungrig?Wir bezuschussen dein Mittagessen, Snacks oder deinen Einkauf mit einem Essenszuschuss"
+    ]
+  },
+  {
+    "job_id": "12272205",
+    "job_title": "Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Data-Engineer-m-w-d-Hamburg-emetriq-GmbH--12272205-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934320",
+    "company_name": "emetriq GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 6 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "emetriq GmbH",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 5 Tagen",
+      "Gehalt anzeigen",
+      "Hochleistungs-Systemoptimierung:Du entwickelst verteilte Systeme weiter, die in Echtzeit (Sekundenbruchteilen) Werbung personalisiert ausliefern - mit einer Verarbeitungskapazit\u00e4t von zehntausenden Anfragen pro Minute",
+      "Umfassende End-to-End Verantwortung:In unserer AWS-Cloud-Umgebung \u00fcbernimmst du den kompletten Lebenszyklus unserer Services - von der Konzeption \u00fcber die Entwicklung und das Deployment bis hin zum reibungslosen Betrieb",
+      "Technologie-Vorreiter:Du treibst Innovation voran, indem du neue Technologien evaluierst und implementierst, um unser technologisches Fundament kontinuierlich zu st\u00e4rken",
+      "Software-Exzellenz:Mit deiner Expertise in Python und JVM-basierten Sprachen (Scala & Kotlin) entwickelst du robuste, gut getestete und wartungsfreundliche Software-L\u00f6sungen"
+    ]
+  },
+  {
+    "job_id": "12151811",
+    "job_title": "Data Engineers, Analysts & Scientists (w|m|d)",
+    "job_url": "/stellenangebote--Data-Engineers-Analysts-Scientists-wmd-Hamburg-Koeln-Mannheim-Muenchen-Nuernberg-Stuttgart-BridgingIT-GmbH--12151811-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934467",
+    "company_name": "BridgingIT GmbH",
+    "location": "Hamburg, K\u00f6ln, Mannheim, M\u00fcnchen, N\u00fcrnberg, Stuttgart",
+    "posting_date": "vor 2 Wochen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "BridgingIT GmbH",
+      "Hamburg, K\u00f6ln, Mannheim, M\u00fcnchen, N\u00fcrnberg, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 2 Wochen",
+      "Gehalt anzeigen",
+      "Datenverarbeitung & Architektur: Konzeption und Entwicklung von ETL/ELT-Pipelines (z. B. auf Databricks, Fabric, Snowflake) sowie Implementierung skalierbarer Datenarchitekturen in Cloud-Umgebungen (Azure, AWS).",
+      "Datenmodellierung & Optimierung:Entwicklung leistungsstarker und skalierbarer Datenmodelle sowie Definition effizienter Datenstrukturen f\u00fcr Analysen und Berichte.",
+      "Datenqualit\u00e4t & Prozessoptimierung:Sicherstellung der Datenqualit\u00e4t durch Automatisierung, Monitoring und kontinuierliche Optimierung.",
+      "Zusammenarbeit & Innovation: Enge Abstimmung mit Fachbereichen zur Umsetzung technischer Anforderungen in datengetriebene L\u00f6sungen.",
+      "BridgingIT GmbH",
+      "Hamburg, K\u00f6ln, Mannheim, M\u00fcnchen, N\u00fcrnberg, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 2 Wochen",
+      "Gehalt anzeigen",
+      "Datenverarbeitung & Architektur: Konzeption und Entwicklung von ETL/ELT-Pipelines (z. B. auf Databricks, Fabric, Snowflake) sowie Implementierung skalierbarer Datenarchitekturen in Cloud-Umgebungen (Azure, AWS).",
+      "Datenmodellierung & Optimierung:Entwicklung leistungsstarker und skalierbarer Datenmodelle sowie Definition effizienter Datenstrukturen f\u00fcr Analysen und Berichte.",
+      "Datenqualit\u00e4t & Prozessoptimierung:Sicherstellung der Datenqualit\u00e4t durch Automatisierung, Monitoring und kontinuierliche Optimierung.",
+      "Zusammenarbeit & Innovation: Enge Abstimmung mit Fachbereichen zur Umsetzung technischer Anforderungen in datengetriebene L\u00f6sungen.",
+      "Datenanalyse & Visualisierung: Erstellung aussagekr\u00e4ftiger Analysen und Dashboards mit Power BI oder Tableau zur Gewinnung gesch\u00e4ftsrelevanter Insights.",
+      "Datengetriebene Entscheidungsfindung: Unterst\u00fctzung der Fachabteilungen bei der Entwicklung fundierter Entscheidungsgrundlagen.",
+      "Trendanalyse & Mustererkennung: Identifikation und Darstellung von Trends und Mustern in komplexen Datens\u00e4tzen.",
+      "Machine Learning & Modellentwicklung: Entwicklung und Training von ML-Modellen zur L\u00f6sung komplexer Probleme wie Vorhersagen und Optimierungen.",
+      "Datenanalyse & Statistik:Einsatz fortgeschrittener analytischer Methoden und statistischer Verfahren zur Beantwortung komplexer Fragestellungen.",
+      "Zusammenarbeit & Deployment:Enge Zusammenarbeit mit Data Engineers, Analysten und MLOps-Teams, um Modelle effizient in Produktion zu bringen."
+    ]
+  },
+  {
+    "job_id": "12215579",
+    "job_title": "Big Data Engineer Scala (m/w/d)",
+    "job_url": "/stellenangebote--Big-Data-Engineer-Scala-m-w-d-Frankfrt-am-Main-Koeln-Stuttgart-Muenchen-Berlin-Dresden-Hamburg-Saarbruecken-Wien-INFOMOTION-GmbH--12215579-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934615",
+    "company_name": "INFOMOTION GmbH",
+    "location": "Frankfrt am Main, K\u00f6ln, Stuttgart, M\u00fcnchen, Berlin, Dresden, Hamburg, Saarbr\u00fccken, Wien",
+    "posting_date": "vor 3 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "INFOMOTION GmbH",
+      "Frankfrt am Main, K\u00f6ln, Stuttgart, M\u00fcnchen, Berlin, Dresden, Hamburg, Saarbr\u00fccken, Wien",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 3 Tagen",
+      "Gehalt anzeigen",
+      "Du treibst selbst\u00e4ndig die Aufnahme, Analyse und fachliche Entwicklung verschiedener Daten Use Cases bei unseren Kunden und unterst\u00fctzt dabei Mehrwerte aus ihren Daten zu generieren.",
+      "Bei INFOMOTION bist Du der Lead Developer f\u00fcr ein engagiertes Projektteam aus Data-Engineers und Software-Engineers. Du fungierst intern als Mentor und technischer Sparringspartner und extern als Projektverantwortlicher.",
+      "Du konzipierst und implementierst L\u00f6sungen im Big-Data Umfeld und setzt hoch performante Streaming Applikationen im Kontext von Apache Kafka / Apache Spark und Scala auf.",
+      "In enger Zusammenarbeit mit den Data-Engineers und Software-Engineers \u00fcbersetzt Du die Kundenanforderungen in skalierbare Datenarchitekturen und triffst die richtige Balance zwischen fundiertem Design und agiler Entwicklung.",
+      "Du bist Coach und Enabler f\u00fcr das Team, insbesondere in Themen wie Anwendungsentwicklung, Datenmodellierung, automatisierte Tests, CI/CD und Dokumentation.",
+      "Du findest Optimierungs- und Automatisierungsm\u00f6glichkeiten f\u00fcr die Weiterentwicklung der bestehenden Anwendungen.",
+      "Du konzipierst und realisierst mithilfe von modernen Cloud Plattformen in crossfunktionalen Teams spannende Data Integration/Management, Data Automation und Data Virtualization Projekte.",
+      "Als Experte teilst Du gerne Dein Wissen und bietest weniger erfahrenen Teammitgliedern Support und unterst\u00fctzt die technische Koordination."
+    ]
+  },
+  {
+    "job_id": "12317867",
+    "job_title": "Data Engineer (gn)",
+    "job_url": "/stellenangebote--Data-Engineer-gn-Hamburg-LichtBlick-SE--12317867-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934768",
+    "company_name": "LichtBlick SE",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "LichtBlick SE",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "In deiner Rolle bist du Teil unseres Pricing Teams und arbeitest intensiv an den Themen Datenqualit\u00e4t, Datentransformationen und Umsetzung einer dezentralisierten Datenstruktur",
+      "Du arbeitest an der Entwicklung und Implementierung einer modularen, skalierbaren Datenarchitektur unter Ber\u00fccksichtigung aktueller Markttrends (Big Data, Automatisierung, Echtzeitdatenverarbeitung) aktiv mit",
+      "Du erstellst komplexe Datenmodelle und Tests mit dem Verst\u00e4ndnis verschiedener Datenmodellierungsprinzipien",
+      "Die Erstellung und Konfiguration von Daten-Pipelines basierend auf best practices ist Teil deines daily doings",
+      "Du verfasst komplexe Datenbankabfragen in SQL",
+      "Du pflegst Datenmodelle in Versionskontrollsystemen und \u00fcbernimmst das Coden von Prozessen in Python",
+      "Du kollaborierst mit und managest deine Stakeholder"
+    ]
+  },
+  {
+    "job_id": "12164804",
+    "job_title": "SAP Data Engineer (m/w/d) / SAP BW Entwickler (m/w/d) in Voll- oder Teilzeit",
+    "job_url": "/stellenangebote--SAP-Data-Engineer-m-w-d-SAP-BW-Entwickler-m-w-d-in-Voll-oder-Teilzeit-Hamburg-Union-Investment--12164804-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.934911",
+    "company_name": "Union Investment",
+    "location": "Hamburg",
+    "posting_date": "vor 2 Wochen"
+  },
+  {
+    "job_id": "11783168",
+    "job_title": "Senior Cloud Data Engineer (all genders)",
+    "job_url": "/stellenangebote--Senior-Cloud-Data-Engineer-all-genders-Berlin-Essen-Frankfurt-am-Main-Hamburg-Ismaning-bei-Muenchen-Karlsruhe-Koeln-Stuttgart-msg-systems-ag--11783168-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935060",
+    "company_name": "msg systems ag",
+    "location": "Berlin, Essen, Frankfurt am Main, Hamburg, Ismaning bei M\u00fcnchen, Karlsruhe, K\u00f6ln, Stuttgart",
+    "posting_date": "vor 2 Wochen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "msg systems ag",
+      "Berlin, Essen, Frankfurt am Main, Hamburg, Ismaning bei M\u00fcnchen, Karlsruhe, K\u00f6ln, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "Du ber\u00e4tst und unterst\u00fctzt unsere Kunden von der Konzeption bis hin zur Implementierung",
+      "Du entwickelst innovative L\u00f6sungen und arbeitest mit neuesten Cloud- und Big Data-Technologien",
+      "Du \u00fcbernimmst schnell Verantwortung und unterst\u00fctzt bei der Einarbeitung und Betreuung von Kollegen",
+      "Bei uns findest Du ein fachlich und technologisch innovatives und agiles Arbeitsumfeld, sowie exzellente M\u00f6glichkeiten zur pers\u00f6nlichen und technologischen Weiterentwicklung",
+      "Du bist aktiver Teil unseres interdisziplin\u00e4ren Wissensaustausches"
+    ]
+  },
+  {
+    "job_id": "12263652",
+    "job_title": "Senior Cloud Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Senior-Cloud-Data-Engineer-m-w-d-Hamburg-Stuttgart-Mannheim-Frankfurt-am-Main-Berlin-Muenchen-Koeln-Wiesbaden-Hays-Interne-Karriere-bei-Uns--12263652-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935206",
+    "company_name": "Hays \u2013 Interne Karriere bei Uns",
+    "location": "Hamburg, Stuttgart, Mannheim, Frankfurt am Main, Berlin, M\u00fcnchen, K\u00f6ln, Wiesbaden",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "Hays \u2013 Interne Karriere bei Uns",
+      "Hamburg, Stuttgart, Mannheim, Frankfurt am Main, Berlin, M\u00fcnchen, K\u00f6ln, Wiesbaden",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "Als Senior Cloud Data Engineer (m/w/d) nimmst du eine Schl\u00fcsselrolle bei der unternehmensweiten Datenintegration und -bereitstellung f\u00fcr Stakeholder wie Business-Analysten, Data Scientists und andere Fachleute ein",
+      "Durch deinen Beitrag zur Entwicklung der Datenstrategie von Hays Deutschland sowie der Integration der deutschen Architektur in unsere globale Infrastruktur gestaltest du unsere Data-Engineering- und Data-Insights-Landschaft innerhalb unserer zuk\u00fcnftigen Datenarchitektur",
+      "In Zusammenarbeit mit Beratungsteams und anderen externen Lieferanten nutzt du die Daten- und Analyselandschaft von Hays, um qualitativ hochwertige Datenprodukte zu liefern",
+      "In deiner Rolle tr\u00e4gst du zur strategischen Entwicklung der Einheit bei, indem du dich mit unseren Data Product- und Data-Governance-Teams sowie mit der operativen IT-Systemlandschaft und den Business Stakeholdern abstimmst",
+      "Du sorgst daf\u00fcr, dass unsere sich st\u00e4ndig weiterentwickelnde Datenproduktlandschaft auf einer soliden Basis steht, um Qualit\u00e4t, Effizienz und Skalierbarkeit zu erm\u00f6glichen und gleichzeitig die Einhaltung von Datenvorschriften zu gew\u00e4hrleisten",
+      "Dein Ziel ist es, ein agiles Umfeld mit einer ausgepr\u00e4gten Produktmentalit\u00e4t zu f\u00f6rdern"
+    ]
+  },
+  {
+    "job_id": "11707039",
+    "job_title": "Data Analytics Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Data-Analytics-Engineer-m-w-d-Hamburg-Kiel-Bremen-Luebeck-Lueneburg-Obungi-GmbH--11707039-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935358",
+    "company_name": "Obungi GmbH",
+    "location": "Hamburg, Kiel, Bremen, L\u00fcbeck, L\u00fcneburg",
+    "posting_date": "vor 5 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "Obungi GmbH",
+      "Hamburg, Kiel, Bremen, L\u00fcbeck, L\u00fcneburg",
+      "Berufseinstieg/Trainee, Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 4 Tagen",
+      "Gehalt anzeigen",
+      "Als Mitglied eines agilen Teams arbeitest du kollaborativ und eigenverantwortlich zusammen mit deinen Kolleg:innen an spannenden Kundenprojekten aus den verschiedensten Branchen",
+      "Du unterst\u00fctzt Kunden dabei, Business Value aus ihren Daten zu generieren",
+      "Du implementierstData Platform Architekturenin derMicrosoft Cloud (Microsoft Fabric & Azure Databricks)",
+      "Dabei bist du in die Projektarbeit von der Planung bis zur Umsetzung eingebunden",
+      "Auch intern bist du Ansprechperson und Impulsgeber:in f\u00fcr die Data & Analytics Themen"
+    ]
+  },
+  {
+    "job_id": "11830466",
+    "job_title": "Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Data-Engineer-m-w-d-Hamburg-Frankfurt-Muenchen-Hannover-Koeln-Berlin-Duesseldorf-Stuttgart-Computer-Futures--11830466-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935511",
+    "company_name": "Computer Futures",
+    "location": "Hamburg, Frankfurt, M\u00fcnchen, Hannover, K\u00f6ln, Berlin, D\u00fcsseldorf, Stuttgart",
+    "posting_date": "vor 4 Wochen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "Computer Futures",
+      "Hamburg, Frankfurt, M\u00fcnchen, Hannover, K\u00f6ln, Berlin, D\u00fcsseldorf, Stuttgart",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 4 Wochen",
+      "Gehalt anzeigen",
+      "Verantwortung f\u00fcr die technischen Kernkompetenzen im Bereich Data Engineering f\u00fcr die Cloud Plattform",
+      "Im Team werden leistungsf\u00e4hige und hochverf\u00fcgbare \u201eData Services\u201c, wie z.B. neue Self BI Portale, Realtime-Scorings oder Machine Learning Modelle entwickelt",
+      "Definieren und implementieren von komplexer Reporting-Landschaften und Anbindung von Datenquellen \u00fcber Datenintegration und Bereitstellung einer Machine Learning Infrastruktur",
+      "Erstellen von Data Pipelines und ETL-Strecken (in-und outbound)",
+      "Integration von Front-End Technologien in eine BI-Systemlandschaft sowie das Erstellen von fachlichen und technischen Konzepten",
+      "BranchePersonaldienstleistungen",
+      "Gegr\u00fcndet",
+      "AdresseQuerstra\u00dfe, Frankfurt am Main",
+      "Unternehmensgr\u00f6\u00dfe1001-2500",
+      "Data Engineer Jobs",
+      "Datenbanken Jobs",
+      "IT Jobs",
+      "Data Analyst Jobs",
+      "Database Analyst Jobs",
+      "Data Science Jobs",
+      "Data Science Engineer Jobs",
+      "Data Scientist Engineer Jobs",
+      "Engineer Big Data Jobs",
+      "Database Engineering Jobs",
+      "Informatiker Jobs",
+      "Data Scientist Jobs",
+      "Data Engineering Jobs",
+      "Data Analysis Jobs",
+      "Data Engineer Consultant Jobs",
+      "Big Data Engineer Jobs",
+      "Data Warehouse Engineer Jobs",
+      "Junior Data Engineer Jobs",
+      "Business Intelligence Data Engineer Jobs"
+    ]
+  },
+  {
+    "job_id": "11783160",
+    "job_title": "Cloud Data Engineer (all genders)",
+    "job_url": "/stellenangebote--Cloud-Data-Engineer-all-genders-Berlin-Duesseldorf-Essen-Frankfurt-am-Main-Hamburg-Ismaning-bei-Muenchen-Karlsruhe-Koeln-msg-systems-ag--11783160-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935661",
+    "company_name": "msg systems ag",
+    "location": "Berlin, D\u00fcsseldorf, Essen, Frankfurt am Main, Hamburg, Ismaning bei M\u00fcnchen, Karlsruhe, K\u00f6ln,",
+    "posting_date": "vor 2 Wochen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "msg systems ag",
+      "Berlin, D\u00fcsseldorf, Essen, Frankfurt am Main, Hamburg, Ismaning bei M\u00fcnchen, Karlsruhe, K\u00f6ln,",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "Du ber\u00e4tst und unterst\u00fctzen unsere Kunden von der Konzeption bis hin zur Implementierung",
+      "Du entwickelst innovative L\u00f6sungen und arbeitest mit neuesten Cloud- und Big Data-Technologien",
+      "Du \u00fcbernimmst schnell Verantwortung und unterst\u00fctzt bei der Einarbeitung und Betreuung von Kollegen",
+      "Bei uns findest du ein fachlich und technologisch innovatives und agiles Arbeitsumfeld, sowie exzellente M\u00f6glichkeiten zur pers\u00f6nlichen und technologischen Weiterentwicklung",
+      "Du bist aktiver Teil unseres interdisziplin\u00e4ren Wissensaustausches"
+    ]
+  },
+  {
+    "job_id": "12314960",
+    "job_title": "Data Scientist / Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Data-Scientist-Data-Engineer-m-w-d-Frankfurt-Hamburg-Koeln-Duesseldorf-Amadeus-Fire-AG--12314960-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935805",
+    "company_name": "Amadeus Fire AG",
+    "location": "Frankfurt, Hamburg, K\u00f6ln, D\u00fcsseldorf",
+    "posting_date": "vor 1 Woche"
+  },
+  {
+    "job_id": "12265361",
+    "job_title": "Senior Data Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Senior-Data-Engineer-m-w-d-Hamburg-HOYER-GmbH-Internationale-Fachspedition--12265361-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.935954",
+    "company_name": "HOYER GmbH Internationale Fachspedition",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "HOYER GmbH Internationale Fachspedition",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 6 Tagen",
+      "Gehalt anzeigen",
+      "Als wertvolles Mitglied eines kleinen Expertenteams sind Sie f\u00fcr die effektive und effiziente Extraktion von Daten aus verschiedenen Systemen verantwortlich",
+      "Sie modellieren die extrahierten Daten optimal f\u00fcr das Reporting und die Datenanalyse",
+      "In enger Zusammenarbeit mit Kollegen aus den Quellsystemen sowie den Business-Analyse-Teams setzen Sie agile Methoden ein",
+      "Ihr Hauptfokus liegt auf der Nutzung von Talend zur effizienten Datenextraktion sowie der Verwaltung des Snowflake Data Warehouse; GitHub wird als Repository f\u00fcr die Speicherung und Versionierung unserer Daten verwendet",
+      "Zusammen mit Ihren Kollegen \u00fcbernehmen Sie die Verwaltung der Systeme Snowflake und Qlik"
+    ]
+  },
+  {
+    "job_id": "10481544",
+    "job_title": "Senior Data Engineer* / Machine Learning Engineer*",
+    "job_url": "/stellenangebote--Senior-Data-Engineer-Machine-Learning-Engineer-Karlsruhe-Koeln-Muenchen-Hamburg-Stuttgart-Pforzheim-Berlin-Erlangen-inovex-GmbH--10481544-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936095",
+    "company_name": "inovex GmbH",
+    "location": "Karlsruhe, K\u00f6ln, M\u00fcnchen, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "inovex GmbH",
+      "Karlsruhe, K\u00f6ln, M\u00fcnchen, Hamburg, Stuttgart, Pforzheim, Berlin, Erlangen",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Teilzeit, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "Gemeinsam mit deinem agilen, cross-funktionalen Projektteam hilfst du unseren Kunden aus unterschiedlichen Branchen, ihre Daten nutzbar zu machen.",
+      "Dein Job beginnt nicht erst mit der Entwicklung von Datenprojekten: Du stimmst dich eng mit unseren Kunden ab und ber\u00e4tst sie in Bezug auf die technische Machbarkeit und die konkrete Umsetzung ihrer digitalen Innovationen.",
+      "Als Senior Data Engineer* / Machine Learning Engineer* gestaltest du das Fundament f\u00fcr sp\u00e4tere Analysen sowie data-driven Services und entwickelst skalierbare, robuste und wartbare Architekturen.",
+      "Du konzipierst und implementierst Datenplattformen, Datenverarbeitungsprozesse und Daten-Services als hochskalierbare, verteilte Systeme in der Cloud, on premises oder hybrid.",
+      "Du bist Expert:in f\u00fcr die Ende-zu-Ende-Integration von Daten- / ETL-Pipelines und das Deployment von Machine-Learning-Modellen bis hin zur Bereitstellung der Ergebnisse innerhalb bestehender IT-Systeme.",
+      "Als Architect oder Technical Lead bist du verantwortlich f\u00fcr die Auswahl und Implementierung geeigneter Technologien, die Sicherstellung der Datenintegrit\u00e4t und -sicherheit, sowie f\u00fcr die effektive Zusammenarbeit mit anderen Teams und Stakeholdern, um die Kundenziele durch datenbasierte L\u00f6sungen zu erreichen."
+    ]
+  },
+  {
+    "job_id": "11265780",
+    "job_title": "Abschlussarbeit im Bereich Datenstrategie und K\u00fcnstliche Intelligenz",
+    "job_url": "/stellenangebote--Abschlussarbeit-im-Bereich-Datenstrategie-und-Kuenstliche-Intelligenz-Berlin-Bonn-Frankfurt-Hamburg-Muenchen-Nuernberg-Wien-Senacor-Technologies-AG--11265780-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936243",
+    "company_name": "Senacor Technologies AG",
+    "location": "Berlin, Bonn, Frankfurt, Hamburg, M\u00fcnchen, N\u00fcrnberg, Wien",
+    "posting_date": "vor 5 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    }
+  },
+  {
+    "job_id": "12273562",
+    "job_title": "System Engineer (all genders) Collaboration Exchange Admin",
+    "job_url": "/stellenangebote--System-Engineer-all-genders-Collaboration-Exchange-Admin-Hamburg-bundesweit-Home-Office-DATAGROUP--12273562-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936368",
+    "company_name": "DATAGROUP",
+    "location": "Hamburg, bundesweit, Home-Office",
+    "posting_date": "vor 6 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "DATAGROUP",
+      "Hamburg, bundesweit, Home-Office",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 5 Tagen",
+      "Gehalt anzeigen",
+      "Konfiguration, Administration, \u00dcberwachung und Pflege der im Einsatz befindlichen Exchange-Umgebungen (On-Premises, hybrid, online)",
+      "Betrieb und Management von E-Mail-Security-Gateways",
+      "Mitarbeit bei der strategischen Weiter\u00adentwicklung der Infrastruktur sowie der damit verbundenen Sicherheits\u00adsysteme",
+      "Mitwirkung in Projekten sowie Unterst\u00fctzung / Beratung im Rahmen von Angebots\u00adanfragen und der sp\u00e4teren Umsetzung von Kunden",
+      "Sicherstellung des SLA-konformen Betriebs der selbst betreuten L\u00f6sungen sowie Koordination der eingesetzten Dienstleister und Partner",
+      "St\u00f6rungsbeseitigung und Problemanalyse im Rahmen des Incident (2nd / 3rd Level) sowie Problem\u00admanagements",
+      "Erstellung und Pflege von Dokumentationen"
+    ]
+  },
+  {
+    "job_id": "12314463",
+    "job_title": "Werkstudent*in Data Engineering | Data platforms (m/w/d)",
+    "job_url": "/stellenangebote--Werkstudentin-Data-Engineering-Data-platforms-m-w-d-Hamburg-Otto-Group-data-works-GmbH--12314463-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936509",
+    "company_name": "Otto Group data.works GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    }
+  },
+  {
+    "job_id": "12273574",
+    "job_title": "Informatiker*in (w/m/d) als Sachgebietsleitung",
+    "job_url": "/stellenangebote--Informatikerin-w-m-d-als-Sachgebietsleitung-Norderstedt-Stadt-Norderstedt--12273574-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936648",
+    "company_name": "Stadt Norderstedt",
+    "location": "Norderstedt",
+    "posting_date": "vor 6 Tagen",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "Stadt Norderstedt",
+      "Norderstedt",
+      "Feste Anstellung",
+      "Teilzeit, Vollzeit",
+      "Erschienen: vor 5 Tagen",
+      "Gehalt anzeigen",
+      "Abgeschlossenes Hochschulstudium im Bereich Informatik (Fachinformatiker*in Netzwerk- und Systemadministration, Data Scientist, Data Engineer, IT-Projektmanagement, IT-Sicherheitsanalyst*in o. \u00c4.)",
+      "Langj\u00e4hrige Berufserfahrung im Bereich Informations- und Kommunikationstechnik",
+      "Mehrj\u00e4hrige Leitungserfahrung"
+    ]
+  },
+  {
+    "job_id": "12289216",
+    "job_title": "Lead Data Ops Engineering - Data Sourcing (m/f/d)",
+    "job_url": "/stellenangebote--Lead-Data-Ops-Engineering-Data-Sourcing-m-f-d-Hamburg-Statista-GmbH--12289216-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936780",
+    "company_name": "Statista GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 3 Tagen"
+  },
+  {
+    "job_id": "12264618",
+    "job_title": "Senior Cloud Engineer - AWS (m/f/d)",
+    "job_url": "/stellenangebote--Senior-Cloud-Engineer-AWS-m-f-d-Hamburg-EOS-Technology-Solutions-GmbH--12264618-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.936935",
+    "company_name": "EOS Technology Solutions GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "EOS Technology Solutions GmbH",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "You are responsible for the operation and continuous development of our central AWS platform, as well as for the administration of AWS accounts.",
+      "With your know-how and experience, you support and advise product teams in detail during architecture and code reviews.",
+      "You develop the infrastructure of the central AWS cloud platform with Terraform and ensure that it remains stable and scalable.",
+      "Security standards and cloud guidelines are checked, maintained and continuously improved by you.",
+      "You develop and improve CI/CD pipelines to ensure efficient and reliable processes."
+    ]
+  },
+  {
+    "job_id": "12253342",
+    "job_title": "Cloud Networking Engineer (m/w/d)",
+    "job_url": "/stellenangebote--Cloud-Networking-Engineer-m-w-d-Hamburg-EOS-Technology-Solutions-GmbH--12253342-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.937082",
+    "company_name": "EOS Technology Solutions GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "EOS Technology Solutions GmbH",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "You work in a critical role ensuring seamless network operations across the organization. Therefore, you enjoy working in a collaborative environment and are eager to help customers across the Group get the most from the network for their applications.",
+      "Maintaining, optimizing, and troubleshooting the company\u2019s on-premise wired and wireless network infrastructure to ensure high availability and performance is your specialty,",
+      "You plan and execute network updates, upgrades, and expansions to meet business needs.",
+      "You monitor and enforce network security policies, ensuring compliance with industry standards and internal requirements.",
+      "That is why you collaborate closely with the IT and Security teams to ensure secure stable network operations and a smooth transition to hybrid environments."
+    ]
+  },
+  {
+    "job_id": "12285690",
+    "job_title": "Senior Data Scientist (m/w/d)",
+    "job_url": "/stellenangebote--Senior-Data-Scientist-m-w-d-Hamburg-justtrack-GmbH--12285690-inline.html",
+    "scrape_date": "2025-04-15T10:54:07.937222",
+    "company_name": "justtrack GmbH",
+    "location": "Hamburg",
+    "posting_date": "vor 1 Woche",
+    "company_details": {
+      "company_size": "",
+      "industry": ""
+    },
+    "requirements": [
+      "justtrack GmbH",
+      "Hamburg",
+      "Feste Anstellung",
+      "Homeoffice m\u00f6glich, Vollzeit",
+      "Erschienen: vor 1 Woche",
+      "Gehalt anzeigen",
+      "Entwicklung unseres Data-Science-Tech-Stacks vorantreiben, indem du innovative M\u00f6glichkeiten identifizierst und die Umsetzung durch unser Entwicklungsteam steuerst",
+      "In enger Zusammenarbeit mit unseren Entwicklern wiederkehrende Analysen in Metriken, Diagramme, gesch\u00e4ftsrelevante Nachrichten sowie zugrunde liegende Datenspeicherung und Pipelines transformieren",
+      "ML-Modelle entwickeln, um unsere Nutzer in Echtzeit \u00fcber erkannte Trends und statistische Ausrei\u00dfer zu benachrichtigen",
+      "Wissen und verwertbare Erkenntnisse aus lauten, strukturierten und unstrukturierten Daten gewinnen",
+      "Explorative Datenanalysen durchf\u00fchren, um Korrelationen und Trends zu identifizieren",
+      "Mit Daten aus verschiedenen Quellen arbeiten (Redshift, Spark, SQL, Athena, S3, Druid Event Streams, AWS Data Pipeline)"
+    ]
+  }
+]
