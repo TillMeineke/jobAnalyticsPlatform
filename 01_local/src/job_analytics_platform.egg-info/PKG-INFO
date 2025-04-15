@@ -1,3 +1,11 @@
+Metadata-Version: 2.4
+Name: job_analytics_platform
+Version: 0.1.0
+Summary: Job Analytics Platform for data collection and analysis
+Author: Till Meineke
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+
 # 🏠 Local Development Environment
 
 This directory contains all components needed for local development and testing of the Job Analytics Platform.

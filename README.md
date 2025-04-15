@@ -2,6 +2,17 @@
 
 Welcome to the Job Analytics Platform! This project implements a modern data pipeline for job market analytics, following the medallion architecture (🥉 Bronze, 🥈 Silver, 🥇 Gold) and best practices for Data Engineering Zoomcamp.
 
+## 🎯 Overview
+
+This platform collects, processes, and analyzes job market data through:
+
+- Web scrapers for multiple job platforms (StepStone, LinkedIn, etc.)
+- Medallion architecture data processing (Bronze → Silver → Gold)
+- dbt transformations for data modeling
+- Kestra for workflow orchestration
+- Metabase dashboards for visualization
+- Local development with Docker and cloud deployment on AWS
+
 ## 📂 Project Structure
 
 - [🏠 Local Development Environment](01_local/README.md)

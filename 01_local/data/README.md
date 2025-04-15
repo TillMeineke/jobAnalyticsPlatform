@@ -13,22 +13,31 @@ data/
 
 ## 🔄 Data Flow
 
-1. **Bronze Layer**: Raw job listings are saved here directly from the scraper in JSON format
-2. **Silver Layer**: Cleaned and deduplicated data from the processing pipeline in CSV format
-3. **Gold Layer**: Aggregated metrics and analytics-ready data for visualization in CSV format
+1. [Bronze Layer](bronze/README.md): Raw job listings in JSON format
+   - Direct scraper output
+   - Preserves original data structure
+   - No transformations applied
 
-## 📋 Data Files
+2. [Silver Layer](silver/README.md): Processed data in CSV format
+   - Cleaned and standardized
+   - Deduplicated records
+   - Extracted structured fields
 
-- Bronze: `{job_type}_{location}_{timestamp}.json`
+3. [Gold Layer](gold/README.md): Analytics-ready aggregations
+   - Aggregated metrics
+   - Pre-computed statistics
+   - Ready for visualization
+
+## 📋 File Naming Conventions
+
+- Bronze: `{source}_{job_type}_{location}_{timestamp}.json`
 - Silver: `processed_jobs_{timestamp}.csv`
 - Gold: `{aggregation_name}_{timestamp}.csv`
 
-## 🧹 Codebase Consolidation Checklist
+## 🧹 Data Retention
 
-- [ ] Remove duplicate or outdated files in each layer
-- [ ] Ensure all data follows naming conventions
-- [ ] Document any manual data changes here
+- Bronze: 30 days
+- Silver: 90 days
+- Gold: Indefinite
 
----
-
-See the README.md in `src/` for code that generates and processes these files.
+For schema details and field descriptions, see the README.md in each layer's directory.

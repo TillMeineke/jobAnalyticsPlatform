@@ -1,0 +1,215 @@
+id: job_search
+namespace: default
+description: |
+  This flow performs a job search using Selenium with Firefox/Gecko to scrape job listings.
+  It searches for job postings based on specified query and location parameters.
+  Results are saved in a structured format for further processing.
+
+inputs:
+  - id: search_query
+    type: STRING
+    description: "Job search query (e.g. 'Data Engineer')"
+    defaults: "Data Engineer"
+
+  - id: search_location
+    type: STRING
+    description: "Location for job search"
+    defaults: "Hamburg"
+
+  - id: max_pages
+    type: INT
+    description: "Maximum number of search result pages to process"
+    defaults: 3
+
+tasks:
+  - id: search_jobs
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        import sys
+        import os
+        import json
+        import hashlib
+        import re
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.service import Service
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.common.exceptions import TimeoutException
+        import time
+        from datetime import datetime
+
+        # Get search parameters
+        search_query = "{{ inputs.search_query }}"
+        search_location = "{{ inputs.search_location }}"
+        max_pages = {{ inputs.max_pages }}
+
+        print(f"Searching for '{search_query}' in '{search_location}'")
+
+        # Setup Firefox options for headless browsing
+        firefox_options = Options()
+        firefox_options.add_argument("--headless")
+
+        # Initialize the Firefox driver
+        driver = webdriver.Firefox(options=firefox_options)
+
+        # Function to generate a unique ID for a job listing
+        def generate_job_id(job_data):
+            unique_string = f"{job_data['title']}-{job_data['company']}-{job_data['url']}"
+            return hashlib.md5(unique_string.encode()).hexdigest()
+
+        try:
+            # Navigate to job search site (using LinkedIn as an example)
+            driver.get("https://www.linkedin.com/jobs/")
+            
+            # Wait for the search elements to be present
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "jobs-search-box__text-input")))
+            
+            # Find search input fields and enter search criteria
+            search_inputs = driver.find_elements(By.CLASS_NAME, "jobs-search-box__text-input")
+            
+            # Clear and fill the job title field
+            search_inputs[0].clear()
+            search_inputs[0].send_keys(search_query)
+            
+            # Clear and fill the location field
+            search_inputs[3].clear()
+            search_inputs[3].send_keys(search_location)
+            
+            # Submit the search
+            search_inputs[3].send_keys(Keys.RETURN)
+            
+            # Wait for search results to appear
+            WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "jobs-search__results-list"))
+            )
+            
+            print("Search results page loaded")
+            
+            # Initialize storage for job data
+            all_jobs = []
+            current_page = 1
+            
+            # Process each page of results up to max_pages
+            while current_page <= max_pages:
+                print(f"Processing page {current_page}")
+                
+                # Allow time for the page to load completely
+                time.sleep(2)
+                
+                # Find all job listings on the current page
+                job_listings = driver.find_elements(By.CLASS_NAME, "job-card-container")
+                
+                # Extract data from each job listing
+                for job_card in job_listings:
+                    try:
+                        # Extract basic job information
+                        job_title_element = job_card.find_element(By.CLASS_NAME, "job-card-list__title")
+                        job_title = job_title_element.text.strip()
+                        job_url = job_title_element.get_attribute("href")
+                        
+                        company_element = job_card.find_element(By.CLASS_NAME, "job-card-container__company-name")
+                        company = company_element.text.strip()
+                        
+                        location_element = job_card.find_element(By.CSS_SELECTOR, "[data-testid='job-card-container__location']")
+                        location = location_element.text.strip()
+                        
+                        # Try to get the posted date if available
+                        try:
+                            date_element = job_card.find_element(By.CSS_SELECTOR, ".job-card-container__footer-item")
+                            posted_date = date_element.text.strip()
+                        except:
+                            posted_date = "Not specified"
+                        
+                        # Create job data structure
+                        job_data = {
+                            "title": job_title,
+                            "company": company,
+                            "location": location,
+                            "posted_date": posted_date,
+                            "url": job_url,
+                            "source": "LinkedIn",
+                            "search_query": search_query,
+                            "search_location": search_location,
+                            "search_timestamp": datetime.now().isoformat()
+                        }
+                        
+                        # Add a unique ID
+                        job_data["id"] = generate_job_id(job_data)
+                        
+                        all_jobs.append(job_data)
+                        print(f"Added job: {job_title} at {company}")
+                        
+                    except Exception as e:
+                        print(f"Error extracting job data: {str(e)}")
+                
+                # Check if we've reached the maximum pages or if there's no next page
+                if current_page >= max_pages:
+                    break
+                
+                # Try to go to next page
+                try:
+                    next_button = driver.find_element(By.CSS_SELECTOR, "button[aria-label='Next']")
+                    if not next_button.is_enabled():
+                        print("No more pages available")
+                        break
+                    
+                    next_button.click()
+                    print("Navigating to next page")
+                    
+                    # Wait for the new page to load
+                    time.sleep(3)
+                    current_page += 1
+                    
+                except Exception as e:
+                    print(f"Error navigating to next page: {str(e)}")
+                    break
+            
+            # Save results to a JSON file
+            with open("job_listings.json", "w") as f:
+                json.dump(all_jobs, f, indent=2)
+            
+            # Pass data to Kestra
+            Kestra.outputs({
+                "jobs_found": len(all_jobs),
+                "pages_processed": current_page,
+                "timestamp": datetime.now().isoformat(),
+                "search_query": search_query,
+                "search_location": search_location
+            })
+            
+            print(f"Found {len(all_jobs)} jobs across {current_page} pages")
+            
+        except Exception as e:
+            print(f"Error during job search: {str(e)}")
+            Kestra.outputs({
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            })
+            
+        finally:
+            # Close the browser
+            driver.quit()
+            print("Browser closed")
+    requirements:
+      - kestra
+      - selenium==4.16.0
+    outputFiles:
+      - job_listings.json
+
+  - id: log_results
+    type: io.kestra.core.tasks.log.Log
+    message: "Found {{ outputs.search_jobs.vars.jobs_found }} jobs for '{{ inputs.search_query }}' in '{{ inputs.search_location }}'"
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 9 * * 1-5" # Run at 9 AM Monday through Friday
+    inputs:
+      search_query: "Data Engineer"
+      search_location: "Hamburg"
+      max_pages: 3

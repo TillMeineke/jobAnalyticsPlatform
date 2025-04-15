@@ -1,4 +1,4 @@
-.PHONY: help setup-local run-local clean-local test-local scrape-data scrape-simple load-dlt run-dbt test-pipeline check-metabase debug restart-metabase import-flows
+.PHONY: help setup-local run-local clean-local test-local scrape-data scrape-simple load-dlt run-dbt test-pipeline check-metabase debug restart-metabase import-flows install-deps start stop test test-unit test-integration lint clean logs
 
 # Colors for pretty output
 GREEN := \033[0;32m
@@ -41,6 +41,15 @@ help:
 	@echo "  ${YELLOW}check-metabase${NC}   Check if Metabase is running and accessible"
 	@echo "  ${YELLOW}restart-metabase${NC} Restart the Metabase container"
 	@echo "  ${YELLOW}import-flows${NC}     Import all flows into Kestra via the API"
+	@echo "  ${YELLOW}install-deps${NC}     Install Python dependencies"
+	@echo "  ${YELLOW}start${NC}            Start Docker services"
+	@echo "  ${YELLOW}stop${NC}             Stop Docker services"
+	@echo "  ${YELLOW}test${NC}             Run all tests (unit + integration)"
+	@echo "  ${YELLOW}test-unit${NC}        Run unit tests"
+	@echo "  ${YELLOW}test-integration${NC} Run integration tests"
+	@echo "  ${YELLOW}lint${NC}             Run linting checks"
+	@echo "  ${YELLOW}clean${NC}            Clean up temporary files"
+	@echo "  ${YELLOW}logs${NC}             Show Docker logs"
 	@echo ""
 	@echo "${GREEN}Examples:${NC}"
 	@echo "  make scrape-simple JOB_TITLE=\"data engineer\" LOCATION=\"berlin\" MAX_PAGES=3"
@@ -183,3 +192,34 @@ test-local:
 	@echo "${YELLOW}Running local tests...${NC}"
 	cd tests && pytest -v
 	@echo "${GREEN}Tests completed!${NC}"
+
+install-deps:
+	pip install -r requirements.txt
+
+start:
+	docker-compose up -d
+
+stop:
+	docker-compose down
+
+test: test-unit test-integration
+
+test-unit:
+	pytest tests/unit -v --cov=src --cov-report=html
+
+test-integration:
+	pytest tests/integration -v --cov=src --cov-report=html
+
+lint:
+	flake8 src tests
+	black src tests --check
+	mypy src
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -r {} +
+	find . -type d -name ".pytest_cache" -exec rm -r {} +
+	find . -type d -name ".coverage" -exec rm -r {} +
+	find . -type d -name "htmlcov" -exec rm -r {} +
+
+logs:
+	docker-compose logs -f

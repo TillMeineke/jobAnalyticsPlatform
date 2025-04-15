@@ -1,45 +1,55 @@
 # 🔄 Kestra Orchestration
 
-This directory contains configuration and instructions for [Kestra](https://kestra.io/), the workflow orchestration tool for the Job Analytics Platform.
+This directory contains Kestra workflow configurations for orchestrating the job analytics data pipeline.
 
-## 🚀 Quickstart
+## 📂 Flow Organization
 
-```bash
-cd 01_local
-make run-local
-# Access Kestra UI at http://localhost:8080
+```
+flows/
+├── 01_ingest/     # Data ingestion flows
+├── 02_process/    # Data processing flows
+└── 03_analyze/    # Analytics flows
 ```
 
-## 📄 Managing Flows
+## 🔄 Flow Naming Patterns
 
-- Place your YAML flows in `01_local/flows/`.
-- Import all flows via Makefile:
+- `01_scrape_stepstone.yaml`: StepStone data collection
+- `02_process_bronze.yaml`: Bronze → Silver transformations
+- `03_generate_gold.yaml`: Silver → Gold aggregations
 
-  ```bash
-  cd 01_local
-  make import-flows
-  ```
+## 🎯 Available Flows
 
-- Or import individual flows via API:
+### Ingestion (Bronze)
 
-  ```bash
-  curl -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@flows/your_flow.yml
-  ```
+- `01_scrape_stepstone.yaml`: Scrapes StepStone job listings
+- `01_scrape_linkedin.yaml`: LinkedIn scraper (planned)
+- `01_scrape_indeed.yaml`: Indeed scraper (planned)
 
-## 🛠️ Troubleshooting
+### Processing (Silver)
 
-- If `make import-flows` fails, ensure:
-  - Kestra is running and accessible at <http://localhost:8080>
-  - There are valid `.yml` files in `01_local/flows/`
-  - The API endpoint is correct
-- For database issues, check the Postgres container logs.
+- `02_scrape_details.yaml`: Data cleaning and standardization
 
-## 🧹 Codebase Consolidation Checklist
+### Analytics (Gold)
 
-- [ ] Remove duplicate or outdated flows
-- [ ] Ensure all flows follow naming conventions
-- [ ] Document any manual changes here
+- `03_weekly_metrics.yaml`: Daily job posting metrics
+- `03_skills_analysis.yaml`: Skills frequency analysis
+- `03_salary_trends.yaml`: Salary trend calculations
 
----
+## 🚀 Running Flows
 
-See the README.md in `flows/` for more on workflow YAMLs and in `src/` for code called by flows.
+### Local Development
+
+```bash
+cd 01_local/kestra
+docker-compose up -d
+```
+
+Access Kestra UI at: <http://localhost:8080>
+
+## 📊 Monitoring
+
+Each flow includes:
+
+- Error handling and retries
+- Slack notifications for failures
+- Execution metrics logging

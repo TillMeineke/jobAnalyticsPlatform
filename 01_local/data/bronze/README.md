@@ -2,24 +2,34 @@
 
 This directory contains raw job listings data scraped from various sources.
 
-Files are saved in JSON format with naming convention:
-`{job_type}_{location}_{timestamp}.json`
-
-Example: `data_scientist_hamburg_20240520_124532.json`
-
 ## 🔄 Data Flow
 
 Source → **Bronze** → Silver → Gold
 
 ## 📋 Schema
 
-Raw job postings contain the following fields:
+Files are saved in JSON format with naming convention:
+`{source}_{job_type}_{location}_{timestamp}.json`
 
-- `job_id`: Unique identifier for the job posting
-- `title`: Job title
-- `company`: Company name
-- `location`: Job location
+Example: `stepstone_data_engineer_berlin_20240520_124532.json`
+
+### Raw Job Listing Fields
+- `source_id`: Original ID from the job platform
+- `title`: Raw job title as posted
+- `company`: Company name as displayed
+- `location`: Raw location string
 - `url`: URL to the job posting
-- `posting_date`: Date when the job was posted
-- `description`: Job description
-- `scrape_timestamp`: Timestamp when the data was collected
+- `posted_date`: Date as provided by source
+- `salary_text`: Raw salary information
+- `description_html`: Original HTML job description
+- `metadata`: Additional source-specific fields
+  - `page_number`: Page in search results
+  - `position`: Position on page
+  - `total_results`: Total search results
+- `scrape_timestamp`: When the data was collected (UTC)
+
+### Supported Sources
+- StepStone
+- LinkedIn (planned)
+- Indeed (planned)
+- Xing (planned)

@@ -1,0 +1,196 @@
+id: job_search
+namespace: default
+description: |
+  This flow searches for jobs on StepStone based on input parameters.
+  It uses Selenium with Firefox/Gecko to perform the search and extract basic job listing information.
+  Results are saved to a file for further processing by the job_details flow.
+
+inputs:
+  - id: job_title
+    type: STRING
+    description: "Job title to search for"
+    defaults: "Data Engineer"
+
+  - id: location
+    type: STRING
+    description: "Location to search for jobs"
+    defaults: "Hamburg"
+
+  - id: results_limit
+    type: INT
+    description: "Maximum number of job listings to retrieve"
+    defaults: 10
+
+tasks:
+  - id: search_jobs
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        import sys
+        import os
+        import json
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.service import Service
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.common.exceptions import TimeoutException
+        import time
+        from datetime import datetime
+
+        # Get input parameters
+        job_title = "{{ inputs.job_title }}"
+        location = "{{ inputs.location }}"
+        results_limit = {{ inputs.results_limit }}
+
+        print(f"Searching for '{job_title}' in '{location}'")
+
+        # Setup Firefox options for headless browsing
+        firefox_options = Options()
+        firefox_options.add_argument("--headless")
+
+        # Initialize the Firefox driver
+        driver = webdriver.Firefox(options=firefox_options)
+
+        try:
+            # Navigate to StepStone
+            driver.get("https://www.stepstone.de")
+            print("Navigated to StepStone")
+            
+            # Accept cookies if the dialog appears
+            try:
+                WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "ccmgt_explicit_accept"))
+                ).click()
+                print("Accepted cookies")
+            except TimeoutException:
+                print("No cookie dialog found or already accepted")
+            
+            # Fill in search form
+            try:
+                # Wait for the search fields to be ready
+                WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.ID, "stepstone-autocomplete-input-what"))
+                )
+                
+                # Enter job title
+                job_input = driver.find_element(By.ID, "stepstone-autocomplete-input-what")
+                job_input.clear()
+                job_input.send_keys(job_title)
+                
+                # Enter location
+                loc_input = driver.find_element(By.ID, "stepstone-autocomplete-input-where")
+                loc_input.clear()
+                loc_input.send_keys(location)
+                
+                # Submit the form
+                submit_button = driver.find_element(By.XPATH, "//button[@data-testid='search-button']")
+                submit_button.click()
+                print("Submitted search form")
+                
+                # Wait for search results to load
+                WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "article[data-testid='job-card']"))
+                )
+                
+                # Extract job listings
+                job_cards = driver.find_elements(By.CSS_SELECTOR, "article[data-testid='job-card']")
+                print(f"Found {len(job_cards)} job cards")
+                
+                # Limit number of results if needed
+                job_cards = job_cards[:results_limit] if len(job_cards) > results_limit else job_cards
+                
+                # Extract data from each job card
+                job_listings = []
+                for i, card in enumerate(job_cards):
+                    try:
+                        # Extract job title
+                        title_element = card.find_element(By.CSS_SELECTOR, "h2[data-testid='job-card-title']")
+                        title = title_element.text
+                        
+                        # Extract job URL
+                        url_element = title_element.find_element(By.XPATH, "./parent::a")
+                        url = url_element.get_attribute("href")
+                        
+                        # Extract company name
+                        company = card.find_element(By.CSS_SELECTOR, "[data-testid='job-card-company-name']").text
+                        
+                        # Extract location
+                        job_location = card.find_element(By.CSS_SELECTOR, "[data-testid='job-card-location']").text
+                        
+                        # Extract posting date if available
+                        try:
+                            posted_date = card.find_element(By.CSS_SELECTOR, "[data-testid='job-card-posted-date']").text
+                        except:
+                            posted_date = "Not specified"
+                        
+                        job_data = {
+                            "id": f"job_{i+1}",
+                            "title": title,
+                            "company": company,
+                            "location": job_location,
+                            "posted_date": posted_date,
+                            "url": url,
+                            "source": "StepStone",
+                            "search_query": job_title,
+                            "search_location": location,
+                            "search_timestamp": datetime.now().isoformat()
+                        }
+                        
+                        job_listings.append(job_data)
+                        print(f"Extracted job {i+1}: {title} at {company}")
+                        
+                    except Exception as e:
+                        print(f"Error extracting data from job card {i+1}: {str(e)}")
+                
+                # Save results to file
+                with open("job_listings.json", "w") as f:
+                    json.dump(job_listings, f, indent=2)
+                
+                # Pass data to Kestra
+                Kestra.outputs({
+                    "status": "success",
+                    "timestamp": datetime.now().isoformat(),
+                    "job_count": len(job_listings),
+                    "search_query": job_title,
+                    "search_location": location
+                })
+                
+                print(f"Successfully extracted {len(job_listings)} job listings")
+                
+            except Exception as e:
+                print(f"Error during search process: {str(e)}")
+                Kestra.outputs({
+                    "status": "error",
+                    "error_message": str(e),
+                    "timestamp": datetime.now().isoformat()
+                })
+                
+        except Exception as e:
+            print(f"Error initializing browser: {str(e)}")
+            Kestra.outputs({
+                "status": "error",
+                "error_message": str(e),
+                "timestamp": datetime.now().isoformat()
+            })
+            
+        finally:
+            # Close the browser
+            driver.quit()
+            print("Browser closed")
+    requirements:
+      - kestra
+      - selenium==4.16.0
+    outputFiles:
+      - job_listings.json
+
+  - id: log_results
+    type: io.kestra.core.tasks.log.Log
+    message: "Found {{ outputs.search_jobs.vars.job_count }} jobs matching '{{ inputs.job_title }}' in '{{ inputs.location }}'"
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 9 * * *" # Run daily at 9 AM

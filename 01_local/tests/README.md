@@ -1,52 +1,50 @@
-# 🧪 Testing for Local Environment
+# 🧪 Tests
 
-This directory contains tests for the local environment components of the Job Analytics Platform.
+This directory contains tests for the Job Analytics Platform.
 
-## 📋 Test Structure
+## 📂 Test Organization
 
-- `conftest.py` - Shared test fixtures and configuration
-- `test_*.py` - Test modules for various components
+```
+tests/
+├── unit/                  # Unit tests
+│   ├── scrapers/         # Scraper component tests
+│   ├── transformers/     # Data transformation tests
+│   └── validators/       # Data validation tests
+├── integration/          # Integration tests
+│   ├── pipeline/        # End-to-end pipeline tests
+│   └── api/            # API endpoint tests
+└── data/               # Test data fixtures
+```
 
-## 🔍 Running Tests
-
-Run all tests:
+## 🚀 Running Tests
 
 ```bash
 cd 01_local
-pytest tests/
+make test              # Run all tests
+make test-unit        # Run only unit tests
+make test-integration # Run only integration tests
 ```
-
-Run specific test modules:
-
-```bash
-cd 01_local
-pytest tests/test_dlt_pipeline.py
-pytest tests/test_data_saver.py
-```
-
-Run tests with coverage report:
-
-```bash
-cd 01_local
-pytest tests/ --cov=src --cov-report=term-missing
-```
-
-## 🚀 Test Categories
-
-- **Unit Tests**: Test individual components in isolation
-- **Integration Tests**: Test interactions between components
-- **Data Quality Tests**: Validate data transformations and schema compliance
 
 ## 📊 Test Coverage
 
-- Aim for at least 80% coverage for critical components
+Coverage reports are generated in `coverage/` directory.
 
-## 🧹 Codebase Consolidation Checklist
+## 🔍 Test Patterns
 
-- [ ] Remove duplicate or outdated tests
-- [ ] Ensure all tests have docstrings and clear names
-- [ ] Add/Update fixtures as needed
+### Unit Tests
 
----
+- One test file per source file
+- Use fixtures for input data
+- Mock external dependencies
 
-See the README.md in `src/` for details on the code being tested.
+### Integration Tests
+
+- Test complete data flows
+- Validate data quality
+- Check pipeline metrics
+
+## 📈 Quality Metrics
+
+- Unit test coverage: >80%
+- Integration test coverage: >60%
+- Max test duration: 5 minutes

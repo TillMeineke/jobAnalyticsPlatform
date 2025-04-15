@@ -1,52 +1,56 @@
-# 🔄 Job Analytics dbt Transformation Layer
+# 📊 dbt Transformations
 
-This directory contains the dbt (data build tool) models and configurations for transforming job data from raw sources into analytics-ready datasets.
+This directory contains dbt models for transforming job listings data through the medallion architecture.
 
-## 📂 Directory Structure
+## 📂 Model Organization
 
-- `models/` - SQL models organized by processing phase (bronze, silver, gold)
-- `analyses/` - Ad-hoc analytical queries
-- `macros/` - Reusable SQL snippets and functions
-- `seeds/` - Static data files
-- `tests/` - Data quality tests
+```
+models/
+├── bronze/      # Source models
+├── silver/      # Cleaned models
+├── gold/        # Analytics models
+└── shared/      # Common CTEs and macros
+```
 
-## 🚀 Getting Started
+## 🔄 Model Dependencies
 
-### Prerequisites
+1. Bronze (Sources)
+   - `raw_stepstone.sql`
+   - `raw_linkedin.sql` (planned)
+   - `raw_indeed.sql` (planned)
 
-- dbt Core installed (`pip install dbt-core dbt-postgres`)
-- Configured `~/.dbt/profiles.yml` file (use our template from `profiles.yml.example`)
+2. Silver (Processing)
+   - `stg_jobs_cleaned.sql`
+   - `stg_companies_normalized.sql`
+   - `stg_locations_parsed.sql`
+   - `stg_salaries_standardized.sql`
+   - `stg_skills_extracted.sql`
 
-### Running Transformations
+3. Gold (Analytics)
+   - `job_postings_daily.sql`
+   - `company_metrics.sql`
+   - `skills_analysis.sql`
+   - `salary_trends.sql`
 
-Run all models:
+## 🚀 Running Models
+
+### Local Development
 
 ```bash
 cd 01_local/dbt
-make run-dbt
+dbt run --profiles-dir .
 ```
 
-Run specific models:
+### Testing
 
 ```bash
-cd 01_local/dbt
-dbt run --select stg_job_listings
-dbt run --select job_analytics_enriched
+dbt test --profiles-dir .
 ```
 
-### Running Tests
+## 📋 Data Quality Tests
 
-```bash
-cd 01_local/dbt
-dbt test
-```
-
-## 🧹 Codebase Consolidation Checklist
-
-- [ ] Remove duplicate or outdated models
-- [ ] Ensure all models follow naming conventions
-- [ ] Add/Update documentation for each model
-
----
-
-See the README.md in `src/` for code that generates input data for these models.
+- Source freshness checks
+- Uniqueness constraints
+- Not-null validations
+- Range checks for salaries
+- Custom data validation rules

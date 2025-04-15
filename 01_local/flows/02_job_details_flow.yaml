@@ -1,0 +1,356 @@
+id: job_details
+namespace: default
+description: |
+  This flow processes job listings from a previous search and scrapes detailed information
+  for each job. It uses Selenium with Firefox/Gecko to navigate to each job page and extract comprehensive details.
+  Results are saved to a database-ready format for analysis.
+
+inputs:
+  - id: job_listings_file
+    type: STRING
+    description: "Path to the job listings JSON file"
+    defaults: "{{ outputs.job_search.taskId('search_jobs').outputFiles['job_listings.json'] }}"
+
+  - id: batch_size
+    type: INT
+    description: "Number of jobs to process in one batch"
+    defaults: 5
+
+tasks:
+  - id: process_job_details
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        import sys
+        import os
+        import json
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.service import Service
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.common.exceptions import TimeoutException, NoSuchElementException
+        import time
+        from datetime import datetime
+        import re
+
+        # Get the job listings file from previous task
+        job_listings_file = "{{ inputs.job_listings_file }}"
+        batch_size = {{ inputs.batch_size }}
+
+        print(f"Processing job details from: {job_listings_file}")
+
+        # Load job listings
+        with open(job_listings_file, 'r') as f:
+            job_listings = json.load(f)
+
+        # Limit to batch size if needed
+        if len(job_listings) > batch_size:
+            print(f"Limiting processing to {batch_size} jobs out of {len(job_listings)}")
+            job_listings = job_listings[:batch_size]
+
+        # Setup Firefox options for headless browsing
+        firefox_options = Options()
+        firefox_options.add_argument("--headless")
+
+        # Initialize the Firefox driver
+        driver = webdriver.Firefox(options=firefox_options)
+
+        # Function to extract clean text
+        def get_clean_text(element):
+            if element:
+                text = element.text.strip()
+                # Remove excessive whitespace
+                text = re.sub(r'\s+', ' ', text)
+                return text
+            return ""
+
+        # Function to extract structured data from job details page
+        def extract_job_details(url):
+            driver.get(url)
+            print(f"Navigating to: {url}")
+            
+            # Wait for page to load
+            WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='job-detail-page']"))
+            )
+            
+            # Give a little extra time for dynamic content
+            time.sleep(2)
+            
+            job_details = {}
+            
+            try:
+                # Basic information
+                job_details["title"] = get_clean_text(driver.find_element(By.CSS_SELECTOR, "h1"))
+                job_details["company"] = get_clean_text(driver.find_element(By.CSS_SELECTOR, "span[data-testid='company-name']"))
+                
+                # Get job description
+                job_description = driver.find_element(By.CSS_SELECTOR, "div[data-testid='job-description-text']")
+                job_details["description"] = get_clean_text(job_description)
+                
+                # Try to get salary information if available
+                try:
+                    salary_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Gehalt') or contains(text(), 'Salary')]/following-sibling::div")
+                    job_details["salary"] = get_clean_text(salary_element)
+                except NoSuchElementException:
+                    job_details["salary"] = "Not specified"
+                
+                # Try to get employment type
+                try:
+                    employment_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Anstellungsart') or contains(text(), 'Employment type')]/following-sibling::div")
+                    job_details["employment_type"] = get_clean_text(employment_element)
+                except NoSuchElementException:
+                    job_details["employment_type"] = "Not specified"
+                
+                # Try to get required experience
+                try:
+                    experience_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Berufserfahrung') or contains(text(), 'Experience')]/following-sibling::div")
+                    job_details["experience"] = get_clean_text(experience_element)
+                except NoSuchElementException:
+                    job_details["experience"] = "Not specified"
+                
+                # Extract skills and requirements from the description
+                skills = []
+                common_skills = ["Python", "SQL", "Java", "JavaScript", "TypeScript", "C++", "C#", 
+                                 "Docker", "Kubernetes", "AWS", "Azure", "GCP", "REST", "API", 
+                                 "Microservices", "Git", "CI/CD", "Agile", "Scrum", "Machine Learning",
+                                 "Data Science", "Data Engineering", "ETL", "Big Data"]
+                
+                for skill in common_skills:
+                    if re.search(r'\b' + re.escape(skill) + r'\b', job_details["description"], re.IGNORECASE):
+                        skills.append(skill)
+                
+                job_details["skills"] = skills
+                job_details["skills_count"] = len(skills)
+                
+                # Add timestamp for when details were scraped
+                job_details["scraped_timestamp"] = datetime.now().isoformat()
+                
+                print(f"Successfully extracted details for: {job_details['title']}")
+                return job_details
+                
+            except Exception as e:
+                print(f"Error extracting job details: {str(e)}")
+                return {"error": str(e)}
+
+        try:
+            # Process each job listing
+            detailed_jobs = []
+            error_count = 0
+            
+            for i, job in enumerate(job_listings):
+                print(f"Processing job {i+1}/{len(job_listings)}")
+                try:
+                    # Get the job URL
+                    url = job["url"]
+                    
+                    # Extract job details
+                    details = extract_job_details(url)
+                    
+                    # Merge original listing with detailed information
+                    full_job_data = {**job, **details}
+                    detailed_jobs.append(full_job_data)
+                    
+                    # Small delay to be respectful to the website
+                    time.sleep(3)
+                    
+                except Exception as e:
+                    print(f"Error processing job {i+1}: {str(e)}")
+                    error_count += 1
+            
+            # Save detailed results to file
+            with open("detailed_jobs.json", "w") as f:
+                json.dump(detailed_jobs, f, indent=2)
+            
+            # Pass data to Kestra
+            Kestra.outputs({
+                "status": "success",
+                "timestamp": datetime.now().isoformat(),
+                "processed_count": len(detailed_jobs),
+                "error_count": error_count,
+                "total_skills_found": sum(job.get("skills_count", 0) for job in detailed_jobs)
+            })
+            
+            print(f"Successfully processed {len(detailed_jobs)} jobs with {error_count} errors")
+            
+        except Exception as e:
+            print(f"Error processing job details: {str(e)}")
+            Kestra.outputs({
+                "status": "error",
+                "error_message": str(e),
+                "timestamp": datetime.now().isoformat()
+            })
+            
+        finally:
+            # Close the browser
+            driver.quit()
+            print("Browser closed")
+    requirements:
+      - kestra
+      - selenium==4.16.0
+    outputFiles:
+      - detailed_jobs.json
+
+  - id: save_to_database
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        import json
+        import os
+        import psycopg2
+        from datetime import datetime
+
+        print("Preparing to save job details to database")
+
+        # Get the file with detailed job information
+        with open("detailed_jobs.json", "r") as f:
+            jobs = json.load(f)
+
+        # Database connection parameters
+        db_params = {
+            "host": "postgres",
+            "database": "jobanalytics",
+            "user": "jobanalytics",
+            "password": "jobanalytics"
+        }
+
+        try:
+            # Connect to the database
+            conn = psycopg2.connect(**db_params)
+            cursor = conn.cursor()
+            print("Connected to database")
+            
+            # Create table if it doesn't exist
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS job_listings (
+                    id TEXT PRIMARY KEY,
+                    title TEXT,
+                    company TEXT,
+                    location TEXT,
+                    posted_date TEXT,
+                    url TEXT,
+                    source TEXT,
+                    search_query TEXT,
+                    search_location TEXT,
+                    search_timestamp TIMESTAMP,
+                    description TEXT,
+                    salary TEXT,
+                    employment_type TEXT,
+                    experience TEXT,
+                    skills TEXT[],
+                    skills_count INTEGER,
+                    scraped_timestamp TIMESTAMP
+                )
+            """)
+            
+            # Insert or update job details
+            success_count = 0
+            error_count = 0
+            
+            for job in jobs:
+                try:
+                    # Convert timestamps to proper format
+                    search_timestamp = datetime.fromisoformat(job["search_timestamp"])
+                    scraped_timestamp = datetime.fromisoformat(job["scraped_timestamp"]) if "scraped_timestamp" in job else None
+                    
+                    # Handle skills array
+                    skills = job.get("skills", [])
+                    
+                    # Upsert the job data
+                    cursor.execute("""
+                        INSERT INTO job_listings (
+                            id, title, company, location, posted_date, url, source,
+                            search_query, search_location, search_timestamp,
+                            description, salary, employment_type, experience,
+                            skills, skills_count, scraped_timestamp
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        )
+                        ON CONFLICT (id) DO UPDATE SET
+                            title = EXCLUDED.title,
+                            company = EXCLUDED.company,
+                            location = EXCLUDED.location,
+                            posted_date = EXCLUDED.posted_date,
+                            url = EXCLUDED.url,
+                            source = EXCLUDED.source,
+                            search_query = EXCLUDED.search_query,
+                            search_location = EXCLUDED.search_location,
+                            search_timestamp = EXCLUDED.search_timestamp,
+                            description = EXCLUDED.description,
+                            salary = EXCLUDED.salary,
+                            employment_type = EXCLUDED.employment_type,
+                            experience = EXCLUDED.experience,
+                            skills = EXCLUDED.skills,
+                            skills_count = EXCLUDED.skills_count,
+                            scraped_timestamp = EXCLUDED.scraped_timestamp
+                    """, (
+                        job["id"],
+                        job.get("title", ""),
+                        job.get("company", ""),
+                        job.get("location", ""),
+                        job.get("posted_date", ""),
+                        job.get("url", ""),
+                        job.get("source", ""),
+                        job.get("search_query", ""),
+                        job.get("search_location", ""),
+                        search_timestamp,
+                        job.get("description", ""),
+                        job.get("salary", "Not specified"),
+                        job.get("employment_type", "Not specified"),
+                        job.get("experience", "Not specified"),
+                        skills,
+                        job.get("skills_count", 0),
+                        scraped_timestamp
+                    ))
+                    
+                    success_count += 1
+                    
+                except Exception as e:
+                    print(f"Error inserting job {job.get('id', 'unknown')}: {str(e)}")
+                    error_count += 1
+            
+            # Commit the transaction
+            conn.commit()
+            print(f"Successfully saved {success_count} jobs to database with {error_count} errors")
+            
+            # Pass data to Kestra
+            Kestra.outputs({
+                "status": "success",
+                "timestamp": datetime.now().isoformat(),
+                "saved_count": success_count,
+                "error_count": error_count
+            })
+            
+        except Exception as e:
+            print(f"Database error: {str(e)}")
+            Kestra.outputs({
+                "status": "error",
+                "error_message": str(e),
+                "timestamp": datetime.now().isoformat()
+            })
+            
+        finally:
+            # Close database connection
+            if 'conn' in locals():
+                cursor.close()
+                conn.close()
+                print("Database connection closed")
+    requirements:
+      - kestra
+      - psycopg2-binary==2.9.9
+
+  - id: log_results
+    type: io.kestra.core.tasks.log.Log
+    message: "Processed {{ outputs.process_job_details.vars.processed_count }} jobs with {{ outputs.process_job_details.vars.total_skills_found }} skills identified. Saved {{ outputs.save_to_database.vars.saved_count }} to database."
+
+triggers:
+  - id: after_job_search
+    type: io.kestra.core.models.triggers.types.Flow
+    conditions:
+      - type: io.kestra.plugin.core.condition.FlowCondition
+        namespace: default
+        flowId: job_search
