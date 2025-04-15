@@ -1,0 +1,52 @@
+id: job_scraper_flow
+namespace: job_analytics
+
+variables:
+  job_title: data engineer
+  location: hamburg
+  max_pages: 2
+
+tasks:
+  - id: scrape_jobs
+    type: io.kestra.plugin.scripts.python.Script
+    inputFiles:
+      script.py: |
+        import sys
+        import os
+        sys.path.append("/app")
+        from src.scrapers.stepstone import StepStoneScraper
+
+        job_title = "{{ job_title }}"
+        location = "{{ location }}"
+        max_pages = {{ max_pages }}
+
+        scraper = StepStoneScraper()
+        results = scraper.search(
+            job_titles=[job_title],
+            location=location,
+            max_pages=max_pages
+        )
+        print(f"Found {len(results)} job listings")
+    docker:
+      image: job-analytics-python
+      network: job-analytics-network
+
+  - id: load_to_database
+    type: io.kestra.plugin.scripts.python.Script
+    dependsOn:
+      - scrape_jobs
+    inputFiles:
+      script.py: |
+        import sys
+        sys.path.append("/app")
+        from src.dlt_pipelines.jobs_pipeline import run_pipeline
+
+        run_pipeline()
+    docker:
+      image: job-analytics-python
+      network: job-analytics-network
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 0 * * *" # Run at midnight every day

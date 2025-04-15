@@ -142,10 +142,32 @@ restart-metabase:
 		echo "${YELLOW}Metabase still starting up, please wait a bit longer and check http://localhost:3000${NC}"
 
 import-flows:
-	@for f in 01_local/flows/*.yml; do \
-	  echo "Importing $$f"; \
-	  curl -s -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@$$f; \
+	@echo "${YELLOW}Waiting for Kestra to be ready...${NC}"
+	@for i in $$(seq 1 30); do \
+		if curl -s http://localhost:8080/api/v1/health > /dev/null; then \
+			echo "${GREEN}Kestra is ready!${NC}"; \
+			break; \
+		fi; \
+		if [ $$i -eq 30 ]; then \
+			echo "${RED}Kestra did not become ready in time${NC}"; \
+			exit 1; \
+		fi; \
+		echo "Waiting... ($$i/30)"; \
+		sleep 2; \
 	done
+	@echo "${YELLOW}Importing flows...${NC}"
+	@for f in flows/*.yml; do \
+		echo "Importing $$f"; \
+		response=$$(curl -v -X POST http://localhost:8080/api/v1/flows/import -F "fileUpload=@$$f" 2>&1); \
+		if echo "$$response" | grep -q "HTTP/.*2[0-9][0-9]"; then \
+			echo "${GREEN}Successfully imported $$f${NC}"; \
+		else \
+			echo "${RED}Failed to import $$f${NC}"; \
+			echo "$$response"; \
+			exit 1; \
+		fi; \
+	done
+	@echo "${GREEN}All flows imported successfully!${NC}"
 
 test-pipeline: run-local setup-postgres-schemas setup-dbt-profiles scrape-simple load-dlt run-dbt check-metabase
 	@echo "${GREEN}=====================================${NC}"

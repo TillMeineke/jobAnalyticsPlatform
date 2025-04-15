@@ -1,0 +1,31 @@
+id: data_processing_flow
+namespace: job_analytics
+
+tasks:
+  - id: transform_jobs
+    type: io.kestra.plugin.scripts.python.Script
+    inputFiles:
+      script.py: |
+        import sys
+        sys.path.append("/app")
+        from src.dlt_pipelines.process_jobs import transform_jobs
+
+        transform_jobs()
+    docker:
+      image: job-analytics-python
+      network: job-analytics-network
+
+  - id: run_dbt
+    type: io.kestra.plugin.scripts.shell.Commands
+    dependsOn:
+      - transform_jobs
+    commands:
+      - cd /app/01_local/dbt && dbt run
+    docker:
+      image: job-analytics-python
+      network: job-analytics-network
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 1 * * *" # Run at 1 AM every day
