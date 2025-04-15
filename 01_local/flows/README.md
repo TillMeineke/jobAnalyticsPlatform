@@ -17,34 +17,41 @@ This directory contains Kestra flows for the Job Analytics Platform.
 ## 🚀 Running Flows
 
 ```bash
-# Import flows into Kestra
+# Start the platform (note: Kestra takes 60-90 seconds to fully initialize)
 cd /Users/tillmeineke/ML/jobAnalyticsPlatform/01_local
+docker compose down
+docker compose up -d
+
+# Wait at least 60-90 seconds for Kestra to fully initialize before importing flows
+sleep 90
+
+# Import flows into Kestra
 curl -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@flows/job_scraper_flow.yaml
 curl -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@flows/data_processing_flow.yaml
 ```
 
+> ⚠️ **Important**: The Kestra container takes more than 60 seconds to fully initialize. If you try to import flows too early, you may get connection errors or flows may not appear in the UI. Wait at least 1-2 minutes after starting the container before importing flows.
+
 ## 🔧 Troubleshooting
 
-### Kestra Issues
+### Kestra Issues:
 
 1. **Flows not appearing in UI after import:**
    - Check if Kestra is running: `docker ps`
-   - Ensure you're using the correct Python task type: `io.kestra.core.tasks.scripts.Python`
+   - Ensure you're using the correct Python task type: `io.kestra.core.tasks.scripts.Python` 
    - Restart Kestra to apply changes:
-
    ```bash
    cd /Users/tillmeineke/ML/jobAnalyticsPlatform/01_local
    docker compose down
    docker compose up -d
    ```
-
-   - Wait 10-15 seconds before importing flows
+   - Wait 60-90 seconds before importing flows
 
 2. **Connection errors:**
    - Check Kestra logs: `docker logs job-analytics-kestra`
    - Ensure PostgreSQL is running and healthy
 
-### Metabase Issues
+### Metabase Issues:
 
 1. **If Metabase shows encryption warnings:**
    - Make sure `MB_ENCRYPTION_SECRET_KEY` is set in docker-compose.yml
@@ -64,7 +71,6 @@ curl -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@flows/data
 2. **Python requirements:**
    - Always include `kestra` in requirements to use the Kestra outputs API
    - Example usage:
-
    ```python
    from kestra import Kestra
    Kestra.outputs({'status': 'completed', 'count': 42})
