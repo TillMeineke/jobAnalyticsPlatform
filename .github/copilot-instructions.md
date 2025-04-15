@@ -15,6 +15,8 @@ After major changes or new feature implementations (only one single step at a ti
 - Always give bash command with, the right directory, e.g. `cd 01_local/docker` before running the command.
 - Write instructions to run the project in the README.md files in subfolder, not the main `README.md` in the root directory.
 - No code in main `README.md` file, only links Readme.md files in subfolders.
+- kestra flows need `.yaml` extension, not `.yml`.
+- rename old, unused and obsolete files with `.old` extension, do not delete them.
 
 ## Technical Stack
 

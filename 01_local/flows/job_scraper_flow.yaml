@@ -1,5 +1,5 @@
-id: job_scraper_flow
-namespace: job_analytics
+id: job_scraper
+namespace: default
 
 variables:
   job_title: data engineer

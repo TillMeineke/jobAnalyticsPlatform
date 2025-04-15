@@ -1,5 +1,5 @@
-id: data_processing_flow
-namespace: job_analytics
+id: data_processor
+namespace: default
 
 tasks:
   - id: transform_jobs

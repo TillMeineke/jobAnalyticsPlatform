@@ -75,8 +75,9 @@ services:
             username: jobanalytics
             password: jobanalytics
         kestra:
-          tutorialFlows:
-            enabled: false
+          server:
+            basicAuth:
+              enabled: false
           repository:
             type: postgres
           storage:
@@ -89,6 +90,8 @@ services:
             tmpDir:
               path: /tmp/kestra-wd/tmp
           url: http://localhost:8080/
+          tutorialFlows:
+            enabled: false
     networks:
       - job-analytics-network
     depends_on:

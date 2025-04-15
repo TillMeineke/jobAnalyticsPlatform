@@ -156,7 +156,11 @@ import-flows:
 		sleep 2; \
 	done
 	@echo "${YELLOW}Importing flows...${NC}"
-	@for f in flows/*.yml; do \
+	@if [ -z "$$(ls -A flows/*.yaml 2>/dev/null)" ]; then \
+		echo "${RED}No .yaml files found in flows directory${NC}"; \
+		exit 1; \
+	fi
+	@for f in flows/*.yaml; do \
 		echo "Importing $$f"; \
 		response=$$(curl -v -X POST http://localhost:8080/api/v1/flows/import -F "fileUpload=@$$f" 2>&1); \
 		if echo "$$response" | grep -q "HTTP/.*2[0-9][0-9]"; then \
