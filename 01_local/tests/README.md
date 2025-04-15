@@ -9,18 +9,25 @@ This directory contains tests for the local environment components of the Job An
 
 ## 🔍 Running Tests
 
-You can run the tests using the following commands:
+Run all tests:
 
 ```bash
-# Run all tests
 cd 01_local
 pytest tests/
+```
 
-# Run specific test modules
+Run specific test modules:
+
+```bash
+cd 01_local
 pytest tests/test_dlt_pipeline.py
 pytest tests/test_data_saver.py
+```
 
-# Run tests with coverage report
+Run tests with coverage report:
+
+```bash
+cd 01_local
 pytest tests/ --cov=src --cov-report=term-missing
 ```
 
@@ -32,18 +39,14 @@ pytest tests/ --cov=src --cov-report=term-missing
 
 ## 📊 Test Coverage
 
-The goal is to maintain at least 80% test coverage for critical components:
+- Aim for at least 80% coverage for critical components
 
-- Data scrapers
-- Pipeline components
-- Data transformations
+## 🧹 Codebase Consolidation Checklist
 
-## 📘 Writing Tests
+- [ ] Remove duplicate or outdated tests
+- [ ] Ensure all tests have docstrings and clear names
+- [ ] Add/Update fixtures as needed
 
-When adding new components, please include corresponding test files following these guidelines:
+---
 
-1. Use descriptive test function names
-2. Include docstrings explaining the test purpose
-3. Arrange tests in logical sections
-4. Use appropriate fixtures from `conftest.py`
-5. Mock external dependencies when needed
+See the README.md in `src/` for details on the code being tested.

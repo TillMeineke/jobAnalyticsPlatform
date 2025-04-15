@@ -1,204 +1,48 @@
 # 🏠 Local Development Environment
 
-This directory contains all components needed for local development and testing of the job analytics platform.
+This directory contains all components needed for local development and testing of the Job Analytics Platform.
 
 ## 📂 Directory Structure
 
 - `src/` - Source code for data collection and processing
-  - `scrapers/` - Web scrapers for different job platforms
-  - `pipeline/` - Data processing pipeline components
-  - `database/` - Database models and utilities
-  - `scripts/` - Utility scripts
+- `data/` - Medallion architecture data (🥉 Bronze, 🥈 Silver, 🥇 Gold)
+- `dbt/` - dbt transformation models
+- `kestra/` - Kestra orchestration config
+- `metabase/` - Metabase dashboard config
+- `flows/` - Kestra workflow YAMLs
+- `tests/` - Python tests
 
-## 🤖 Web Scrapers
-
-### StepStone Scraper
-
-The StepStone scraper has two main components:
-
-1. **Search Retriever**
-   - Collects basic job listing information
-   - Stores data in SQLite database
-
-2. **Details Retriever**
-   - Fetches comprehensive job details
-   - Updates existing records in the database
-
-### Running the Scrapers
-
-#### Prerequisites
-
-1. Ensure geckodriver is installed (handled automatically by Makefile)
-2. Create and configure `.env` file with login credentials (if needed)
-
-#### Search Retriever
+## 🚀 Quickstart
 
 ```bash
-make search-jobs ARGS="--job-titles 'Data Engineer' 'Data Scientist' --location 'Deutschland'"
-```
-
-This will:
-
-- Search for multiple job titles
-- Store basic job information in the SQLite database
-- Continue running until interrupted (Ctrl+C)
-
-#### Details Retriever
-
-```bash
-make fetch-details ARGS="--max-updates 10 --sleep-time 30"
-```
-
-This will:
-
-- Fetch detailed information for jobs in the database
-- Process 10 jobs per batch
-- Wait 30 seconds between batches
-
-## 💾 Database
-
-The scrapers store data in an SQLite database named `stepstone_jobs.db` in the project root directory.
-
-### Database Schema
-
-```
-Table: jobs
-- job_id (TEXT, PRIMARY KEY): Unique identifier for the job
-- title (TEXT): Job title
-- company (TEXT): Company name
-- location (TEXT): Job location
-- url (TEXT): URL to the job posting
-- salary (TEXT): Salary information (if available)
-- posted (TEXT): When the job was posted
-- source (TEXT): Source platform (e.g., "StepStone")
-- scraped (INTEGER): Flag indicating if detailed info was scraped (0/1)
-- scraped_at (TEXT): Timestamp of when job was scraped
-- description (TEXT): Full job description
-- created_at (TEXT): Record creation timestamp
-
-Table: job_skills
-- id (INTEGER, PRIMARY KEY): Auto-incrementing ID
-- job_id (TEXT): Reference to jobs table
-- skill (TEXT): Skill name
-- UNIQUE(job_id, skill): Prevents duplicate skills per job
-```
-
-### Querying the Database
-
-You can query the database using SQLite:
-
-```bash
-sqlite3 stepstone_jobs.db
-
-# View all tables
-.tables
-
-# Count total jobs
-SELECT COUNT(*) FROM jobs;
-
-# View jobs with details
-SELECT job_id, title, company, location FROM jobs WHERE scraped = 1;
-
-# View job skills
-SELECT j.title, s.skill 
-FROM jobs j 
-JOIN job_skills s ON j.job_id = s.job_id 
-LIMIT 10;
-```
-
-## 🐳 Docker
-
-Local services are managed using Docker Compose:
-
-```bash
-# Build and start services
+cd 01_local
 make setup-local
 make run-local
-
-# Stop services
-make clean-local
 ```
+
+- Access Kestra: <http://localhost:8080>
+- Access Metabase: <http://localhost:3000>
 
 ## 🧪 Testing
 
-Run tests for the local components:
-
 ```bash
+cd 01_local
 make test-local
-```
-
-## 📝 Development Workflow
-
-1. Run the scrapers to collect data
-2. Process the data using the pipeline
-3. Visualize using local Metabase instance
-
-## 🔄 Data Flow
-
-```
-Web Scraping → SQLite (Bronze) → Transformation → PostgreSQL (Silver) → Analytics → Metabase (Gold)
 ```
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+- If you see `make import-flows` errors, ensure you have YAML files in `01_local/flows` and Kestra is running.
+- For database connection issues, check Postgres logs and ensure the container is healthy.
+- For port conflicts, stop other services using 5432, 3000, or 8080.
 
-1. **Geckodriver compatibility warnings**
-   - The system automatically installs the correct version (0.36.0)
-   - If warnings persist, run `make clean-geckodriver && make setup-geckodriver`
+## 🧹 Codebase Consolidation Checklist
 
-2. **Login failures**
-   - Ensure your `.env` file contains valid credentials:
+- [ ] Review `data/` and `src/` for duplicate scripts or data
+- [ ] Move reusable code to `src/` and update imports
+- [ ] Remove/archive old or duplicate files
+- [ ] Update this README and subfolder READMEs after changes
 
-     ```
-     STEPSTONE_EMAIL=your.email@example.com
-     STEPSTONE_PASSWORD=your_password
-     ```
+---
 
-3. **No jobs found**
-   - Try different job titles or locations
-   - Check if the site structure has changed (may require scraper updates)
-
-4. **Rate limiting**
-   - Increase sleep time between requests: `--sleep-time 120`
-
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/jobAnalyticsPlatform.git
-cd jobAnalyticsPlatform
-```
-
-2. Setup the environment
-
-```bash
-make setup
-```
-
-3. Start the local environment
-
-```bash
-make start-local
-```
-
-4. Run the pipeline
-
-```bash
-# Run the job scraper for data analytics jobs in Hamburg
-python 01_local/scrapers/job_scraper.py --job-type "data analytics" --location "hamburg"
-
-# Run for specific job types
-python 01_local/scrapers/job_scraper.py --job-type "data scientist" --location "hamburg"
-python 01_local/scrapers/job_scraper.py --job-type "data engineer" --location "hamburg"
-python 01_local/scrapers/job_scraper.py --job-type "machine learning engineer" --location "hamburg"
-
-# Process data through the pipeline
-python 01_local/dlt_pipelines/process_jobs.py
-```
-
-5. Access the dashboard
-
-```
-http://localhost:3000
-```
+For more details, see the README.md in each subfolder.

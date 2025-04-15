@@ -1,4 +1,4 @@
-.PHONY: help setup-local run-local clean-local test-local scrape-data scrape-simple load-dlt run-dbt test-pipeline check-metabase debug restart-metabase
+.PHONY: help setup-local run-local clean-local test-local scrape-data scrape-simple load-dlt run-dbt test-pipeline check-metabase debug restart-metabase import-flows
 
 # Colors for pretty output
 GREEN := \033[0;32m
@@ -40,6 +40,7 @@ help:
 	@echo "  ${YELLOW}test-pipeline${NC}    Run full pipeline test (scrape-simple + load-dlt + run-dbt + check-metabase)"
 	@echo "  ${YELLOW}check-metabase${NC}   Check if Metabase is running and accessible"
 	@echo "  ${YELLOW}restart-metabase${NC} Restart the Metabase container"
+	@echo "  ${YELLOW}import-flows${NC}     Import all flows into Kestra via the API"
 	@echo ""
 	@echo "${GREEN}Examples:${NC}"
 	@echo "  make scrape-simple JOB_TITLE=\"data engineer\" LOCATION=\"berlin\" MAX_PAGES=3"
@@ -139,6 +140,12 @@ restart-metabase:
 	@curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q 200 && \
 		echo "${GREEN}Metabase restarted successfully!${NC}" || \
 		echo "${YELLOW}Metabase still starting up, please wait a bit longer and check http://localhost:3000${NC}"
+
+import-flows:
+	@for f in 01_local/flows/*.yml; do \
+	  echo "Importing $$f"; \
+	  curl -s -X POST http://localhost:8080/api/v1/flows/import -F fileUpload=@$$f; \
+	done
 
 test-pipeline: run-local setup-postgres-schemas setup-dbt-profiles scrape-simple load-dlt run-dbt check-metabase
 	@echo "${GREEN}=====================================${NC}"

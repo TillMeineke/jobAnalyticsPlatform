@@ -13,6 +13,8 @@ After major changes or new feature implementations (only one single step at a ti
 - Avoid making major changes to patterns and architecture unless explicitly instructed.
 - Always consider how changes might affect other methods and areas of the codebase.
 - Always give bash command with, the right directory, e.g. `cd 01_local/docker` before running the command.
+- Write instructions to run the project in the README.md files in subfolder, not the main `README.md` in the root directory.
+- No code in main `README.md` file, only links Readme.md files in subfolders.
 
 ## Technical Stack
 

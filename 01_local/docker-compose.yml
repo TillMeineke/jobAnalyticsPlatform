@@ -52,7 +52,7 @@ services:
 
   # Kestra for workflow orchestration
   kestra:
-    image: kestra/kestra:latest-full
+    image: kestra/kestra:latest # Use the latest stable version, DO NOT CHANGE
     platform: linux/amd64 # Specify platform for Apple Silicon compatibility
     container_name: job-analytics-kestra
     pull_policy: if_not_present
@@ -62,6 +62,7 @@ services:
       - kestra_data:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
+      - ./flows:/app/flows # Mount local flows for easy import in dev
     ports:
       - "8080:8080"
       - "8081:8081"

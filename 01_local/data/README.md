@@ -19,21 +19,16 @@ data/
 
 ## 📋 Data Files
 
-### Bronze Layer
+- Bronze: `{job_type}_{location}_{timestamp}.json`
+- Silver: `processed_jobs_{timestamp}.csv`
+- Gold: `{aggregation_name}_{timestamp}.csv`
 
-- Format: `{job_type}_{location}_{timestamp}.json`
-- Example: `data_analytics_hamburg_20240520_124532.json`
+## 🧹 Codebase Consolidation Checklist
 
-### Silver Layer
+- [ ] Remove duplicate or outdated files in each layer
+- [ ] Ensure all data follows naming conventions
+- [ ] Document any manual data changes here
 
-- Format: `processed_jobs_{timestamp}.csv`
-- Example: `processed_jobs_20240520_125043.csv`
+---
 
-### Gold Layer
-
-- Format: `{aggregation_name}_{timestamp}.csv`
-- Examples:
-  - `job_count_by_company_20240520_125043.csv`
-  - `job_count_by_location_20240520_125043.csv`
-  - `job_count_by_title_20240520_125043.csv`
-  - `daily_job_count_20240520_125043.csv`
+See the README.md in `src/` for code that generates and processes these files.
