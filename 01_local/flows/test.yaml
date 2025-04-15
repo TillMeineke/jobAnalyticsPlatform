@@ -1,0 +1,7 @@
+id: test_flow
+namespace: default
+
+tasks:
+  - id: simple_test
+    type: io.kestra.core.tasks.log.Log
+    message: Test message

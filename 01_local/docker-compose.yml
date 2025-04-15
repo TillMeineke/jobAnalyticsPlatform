@@ -39,6 +39,8 @@ services:
       - MB_DB_PASS=jobanalytics
       - MB_DB_HOST=postgres
       - MB_JETTY_PORT=3000
+      - JAVA_OPTS=-Xmx2g
+      - MB_ENCRYPTION_SECRET_KEY=a7ca41bfd7b8476b9c77e3a9e698d541f7de1d32d38246728328ab409e3ef6f3
     ports:
       - "3000:3000"
     networks:
@@ -75,9 +77,6 @@ services:
             username: jobanalytics
             password: jobanalytics
         kestra:
-          server:
-            basicAuth:
-              enabled: false
           repository:
             type: postgres
           storage:
@@ -92,6 +91,11 @@ services:
           url: http://localhost:8080/
           tutorialFlows:
             enabled: false
+          server:
+            basic-auth:
+              enabled: false
+            workers:
+              enabled: true
     networks:
       - job-analytics-network
     depends_on:

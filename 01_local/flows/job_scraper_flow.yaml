@@ -1,41 +1,25 @@
 id: job_scraper
-namespace: company.team
-
-variables:
-  job_title: data engineer
-  location: hamburg
-  max_pages: 2
+namespace: default
 
 tasks:
-  - id: scrape_jobs
-    type: io.kestra.plugin.scripts.python.Script
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Starting job scraper
+
+  - id: scrape
+    type: io.kestra.core.tasks.scripts.Python
     inputFiles:
-      script.py: |
-        import sys
-        sys.path.append("/app")
-        from src.scrapers.stepstone import StepStoneScraper
-
-        scraper = StepStoneScraper()
-        results = scraper.search(
-            job_titles=["{{ job_title }}"],
-            location="{{ location }}",
-            max_pages={{ max_pages }}
-        )
-        print(f"Found {len(results)} job listings")
-
-  - id: load_to_database
-    type: io.kestra.plugin.scripts.python.Script
-    dependsOn:
-      - scrape_jobs
-    inputFiles:
-      script.py: |
-        import sys
-        sys.path.append("/app")
-        from src.dlt_pipelines.bronze_ingest import run_pipeline
-
-        run_pipeline()
+      main.py: |
+        from kestra import Kestra
+        print("Running job scraper...")
+        from datetime import datetime
+        print(f"Current time: {datetime.now()}")
+        # Add proper scraping code here once basic flow works
+        Kestra.outputs({'status': 'completed', 'timestamp': str(datetime.now())})
+    requirements:
+      - kestra
 
 triggers:
   - id: schedule
     type: io.kestra.core.models.triggers.types.Schedule
-    cron: "0 0 * * *" # Run at midnight every day
+    cron: "0 0 * * *" # Run daily at midnight
