@@ -1,0 +1,25 @@
+id: job_scraper
+namespace: default
+
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Starting job scraper
+
+  - id: scrape
+    type: io.kestra.core.tasks.scripts.Python
+    inputFiles:
+      main.py: |
+        from kestra import Kestra
+        print("Running job scraper...")
+        from datetime import datetime
+        print(f"Current time: {datetime.now()}")
+        # Add proper scraping code here once basic flow works
+        Kestra.outputs({'status': 'completed', 'timestamp': str(datetime.now())})
+    requirements:
+      - kestra
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    cron: "0 0 * * *" # Run daily at midnight

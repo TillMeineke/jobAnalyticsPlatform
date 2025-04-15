@@ -8,7 +8,7 @@ After major changes or new feature implementations (only one single step at a ti
 
 - Focus on the areas of code relevant to the task.
 - Do not touch code that is unrelated to the task.
-- Do not create jupyter notebooks, for debugging or testing, unless explicitly requested. We can use bash.
+- DO NOT create jupyter notebooks, for debugging or testing, unless explicitly requested. We can use bash.
 - Write thorough tests for all major functionality.
 - Avoid making major changes to patterns and architecture unless explicitly instructed.
 - Always consider how changes might affect other methods and areas of the codebase.
@@ -17,6 +17,7 @@ After major changes or new feature implementations (only one single step at a ti
 - No code in main `README.md` file, only links Readme.md files in subfolders.
 - kestra flows need `.yaml` extension, not `.yml`.
 - rename old, unused and obsolete files with `.old` extension, do not delete them.
+- name folder and file with leading numbers to keep the order of execution indicated, e.g. `01_local`, `02_cloud`, or `01_flow.yaml`, `02_flow.yaml`, etc.
 
 ## Technical Stack
 
