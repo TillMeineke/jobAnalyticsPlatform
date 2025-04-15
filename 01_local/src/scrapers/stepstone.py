@@ -18,13 +18,14 @@ from urllib.parse import urljoin
 
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from termcolor import colored
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
 
 # Configure logging
 logging.basicConfig(
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class StepStoneScraper:
-    """Scraper for StepStone job listings."""
+    """Scraper for StepStone job listings using Firefox/GeckoDriver."""
 
     BASE_URL = "https://www.stepstone.de"
     SEARCH_URL = "https://www.stepstone.de/jobs/{}/in-{}?radius=30&sort=2"
@@ -51,23 +52,27 @@ class StepStoneScraper:
 
     def _setup_driver(self) -> None:
         """Set up the Selenium WebDriver."""
-        chrome_options = Options()
+        firefox_options = FirefoxOptions()
         if self.headless:
-            chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--window-size=1920,1080")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+            firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--window-size=1920,1080")
+        firefox_options.add_argument("--disable-gpu")
+        firefox_options.add_argument("--no-sandbox")
+        firefox_options.add_argument("--disable-dev-shm-usage")
 
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=chrome_options
+        self.driver = webdriver.Firefox(
+            service=FirefoxService(GeckoDriverManager().install()),
+            options=firefox_options,
         )
 
     def _close_driver(self) -> None:
         """Close the Selenium WebDriver if it exists."""
         if self.driver:
-            self.driver.quit()
-            logger.info(colored("WebDriver closed", "green"))
+            try:
+                self.driver.quit()
+                logger.info(colored("WebDriver closed", "green"))
+            except Exception as e:
+                logger.error(f"Error closing WebDriver: {e}")
 
     def _accept_cookies(self) -> None:
         """Accept cookies on the website if the dialog appears."""
@@ -79,8 +84,10 @@ class StepStoneScraper:
             )
             cookie_button.click()
             time.sleep(1)
-        except Exception:
-            logger.debug("No cookie dialog found or it could not be closed.")
+        except TimeoutException:
+            logger.info("No cookie consent dialog found")
+        except Exception as e:
+            logger.warning(f"Error handling cookie consent: {e}")
 
     def search_jobs(
         self, job_title: str, location: str, max_results: int = 100, max_pages: int = 10

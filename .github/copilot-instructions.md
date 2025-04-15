@@ -18,6 +18,7 @@ After major changes or new feature implementations (only one single step at a ti
 - kestra flows need `.yaml` extension, not `.yml`.
 - rename old, unused and obsolete files with `.old` extension, do not delete them.
 - name folder and file with leading numbers to keep the order of execution indicated, e.g. `01_local`, `02_cloud`, or `01_flow.yaml`, `02_flow.yaml`, etc.
+- run scripts directly, insted of creating test scripts
 
 ## Technical Stack
 

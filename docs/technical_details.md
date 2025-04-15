@@ -2,6 +2,69 @@
 
 This document provides in-depth technical information about the Job Analytics Platform implementation.
 
+## Web Scraping
+
+### Browser Automation with Selenium
+
+We use Firefox/GeckoDriver for browser automation in our web scrapers for the following reasons:
+
+- **Cross-platform compatibility**: Works consistently across macOS, Linux, and Windows
+- **Headless mode support**: Can run without a visible UI for production environments
+- **Memory efficiency**: Generally uses less memory than Chrome for long-running scraping tasks
+- **Better performance**: Specifically for our use cases with StepStone and similar job sites
+
+#### Setup Requirements
+
+1. **Firefox Browser**:
+   - Install the latest Firefox browser on your system
+   - Firefox is our standard browser for all scraping operations
+
+2. **GeckoDriver**:
+   - We use GeckoDriver as the WebDriver implementation for Firefox
+   - The `webdriver-manager` Python package automatically installs the appropriate GeckoDriver version
+
+3. **Python Dependencies**:
+
+   ```bash
+   pip install selenium webdriver-manager
+   ```
+
+### Scraper Implementation
+
+Our scrapers are configured to use Firefox via the following pattern:
+
+```python
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from webdriver_manager.firefox import GeckoDriverManager
+
+# Set up Firefox options
+firefox_options = FirefoxOptions()
+if headless:
+    firefox_options.add_argument("--headless")
+
+# Additional stability options
+firefox_options.add_argument("--disable-gpu")
+firefox_options.add_argument("--no-sandbox")
+firefox_options.add_argument("--disable-dev-shm-usage")
+
+# Initialize Firefox driver
+driver = webdriver.Firefox(
+    service=FirefoxService(GeckoDriverManager().install()),
+    options=firefox_options
+)
+```
+
+### Testing Scrapers
+
+To test scrapers locally:
+
+```bash
+cd /Users/tillmeineke/ML/jobAnalyticsPlatform/01_local
+python src/scrapers/stepstone.py --job-title "data engineer" --location "hamburg" --max-pages 1
+```
+
 ## 🔍 Data Collection
 
 # 🗂️ Project Structure Implementation Plan

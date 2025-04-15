@@ -1,23 +1,56 @@
-# 🔍 Job Scrapers
+# 🕸️ Job Scrapers
 
-This directory contains scrapers for collecting job posting data from various sources.
+This directory contains scrapers for various job platforms.
 
-## 🚀 Available Scrapers
+## 🦊 Firefox/GeckoDriver Requirement
 
-- `job_scraper.py`: Main scraping script that collects job postings based on job type and location
+**Important**: All scrapers in this project use Firefox and GeckoDriver for browser automation.
 
-## 📋 Usage
+### Prerequisites
+
+1. Install Firefox browser on your system
+2. Required Python packages:
+
+   ```bash
+   pip install selenium webdriver-manager
+   ```
+
+The `webdriver-manager` package will automatically download and manage the appropriate GeckoDriver version for your system.
+
+## 🔄 Available Scrapers
+
+- `stepstone.py` - Scraper for StepStone job listings
+
+## 🚀 Usage
+
+Run scrapers directly from the command line:
 
 ```bash
-# Run the job scraper for a specific job type and location
-python job_scraper.py --job-type "data analytics" --location "hamburg"
+# Change to the 01_local directory
+cd /Users/tillmeineke/ML/jobAnalyticsPlatform/01_local
 
-# Examples for other job types
-python job_scraper.py --job-type "data scientist" --location "hamburg"
-python job_scraper.py --job-type "data engineer" --location "hamburg"
-python job_scraper.py --job-type "machine learning engineer" --location "hamburg"
+# Run StepStone scraper
+python src/scrapers/stepstone.py --job-title "data engineer" --location "hamburg" --max-pages 1
 ```
 
-## 🔧 Configuration
+## 📋 Common Parameters
 
-The scraper saves data in the `data/bronze/` directory with filenames based on job type, location, and timestamp.
+- `--job-title`: Job title to search for (e.g., "data engineer", "python developer")
+- `--location`: Location to search in (e.g., "berlin", "hamburg")
+- `--max-pages`: Maximum number of pages to scrape (default: 10)
+- `--headless`: Run in headless mode (no browser UI)
+- `--output`: Path to save the results CSV file
+- `--scrape-details`: Scrape detailed information for each job
+
+## ⚙️ Configuration
+
+Scrapers can be configured through parameters or environment variables. See the specific scraper documentation for details.
+
+## 🧪 Testing
+
+Test scrapers with:
+
+```bash
+cd /Users/tillmeineke/ML/jobAnalyticsPlatform/01_local
+python tests/run_scraper_test.py --job-title "data engineer" --location "hamburg" --max-pages 1 --details
+```

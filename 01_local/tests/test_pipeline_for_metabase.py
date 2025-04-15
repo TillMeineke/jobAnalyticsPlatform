@@ -7,15 +7,21 @@ for visualization in Metabase.
 
 import argparse
 import logging
+import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 from typing import Dict
 
 import colorama
 import psycopg2
 from colorama import Fore, Style
 from psycopg2 import sql
+
+# Add project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.append(str(PROJECT_ROOT))
 
 # Initialize colorama
 colorama.init()
@@ -53,31 +59,28 @@ def log_error(message: str) -> None:
     logger.error(f"{Fore.RED}{message}{Style.RESET_ALL}")
 
 
-def run_command(command: str) -> bool:
-    """
-    Run a shell command and log the output.
-
-    Args:
-        command: The command to run
-
-    Returns:
-        bool: True if the command was successful, False otherwise
-    """
+def run_command(command: str, cwd=None) -> bool:
+    """Run a shell command and log the output."""
+    logger.warning(f"Running command: {command}")
     try:
-        log_warning(f"Running command: {command}")
-        process = subprocess.Popen(
-            command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        # Use current directory if not specified
+        working_dir = cwd if cwd else os.getcwd()
+        result = subprocess.run(
+            command,
+            shell=True,
+            check=True,
+            cwd=working_dir,
+            capture_output=True,
+            text=True,
         )
-        stdout, stderr = process.communicate()
-
-        if process.returncode == 0:
-            log_success(f"Command output: {stdout.decode('utf-8').strip()}")
-            return True
-        else:
-            log_error(f"Command failed with error: {stderr.decode('utf-8').strip()}")
-            return False
-    except Exception as e:
-        log_error(f"Exception while running command: {str(e)}")
+        if result.stdout:
+            logger.info(f"Command output: {result.stdout}")
+        return True
+    except subprocess.CalledProcessError as e:
+        if e.output:
+            logger.error(f"Command failed with error: {e.output}")
+        if e.stderr:
+            logger.error(f"Error output: {e.stderr}")
         return False
 
 
@@ -91,7 +94,7 @@ def run_make_command(target: str) -> bool:
     Returns:
         bool: True if the command was successful, False otherwise
     """
-    return run_command(f"cd .. && make {target}")
+    return run_command(f"make {target}")
 
 
 def check_docker_running() -> bool:
@@ -282,12 +285,9 @@ def main():
         log_warning(
             f"Running scraper for '{args.job_title}' jobs in '{args.location}'..."
         )
-        success = run_command(
-            f"cd .. && python src/run_scraper.py --search-term '{args.job_title}' "
-            f"--location '{args.location}' --max-pages {args.max_pages} "
-            f"--fetch-details --use-dlt"
-        )
-        if not success:
+        # Direct script call instead of using module notation
+        scraper_cmd = f"python {os.path.join(PROJECT_ROOT, 'src', 'run_scraper.py')} --search-term '{args.job_title}' --location '{args.location}' --max-pages {args.max_pages} --fetch-details --use-dlt"
+        if not run_command(scraper_cmd):
             log_error("Failed to run the scraper.")
             return False
 
