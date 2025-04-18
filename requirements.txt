@@ -1,18 +1,19 @@
 # Core packages
-dlt
-sqlalchemy
-pandas
+jupyterlab
+matplotlib
 numpy
+pandas
 psycopg2-binary
+sqlalchemy
 
 # Web scraping
 requests
 beautifulsoup4
 selenium
-webdriver-manager>=3.8.6
-colorlog
+webdriver-manager
 
 # Data processing
+dlt
 dbt-core
 dbt-postgres
 
@@ -21,11 +22,12 @@ pytest
 pytest-cov
 
 # Utilities
+click
+colorlog
 python-dotenv
 pydantic
-tqdm
-click
 termcolor
+tqdm
 
 # AWS
 boto3
@@ -36,3 +38,5 @@ black
 isort
 flake8
 mypy
+pylint
+ruff

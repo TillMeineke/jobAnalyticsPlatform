@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple script to test the StepStone scraper directly.
-This will run the scraper and print the results.
+Test script for StepStone scraper.
+This script runs the scraper with specified parameters and outputs the results.
 """
 
 import argparse
@@ -24,7 +24,13 @@ from src.scrapers.stepstone import StepStoneScraper
 
 
 def test_scraper(
-    job_title: str, location: str, max_pages: int = 1, details: bool = False
+    job_title: str,
+    location: str,
+    max_pages: int = 1,
+    details: bool = False,
+    login: bool = False,
+    logins_path: str = None,
+    headless: bool = False,
 ):
     """
     Test the StepStone scraper.
@@ -34,19 +40,37 @@ def test_scraper(
         location: Location to search in
         max_pages: Maximum number of pages to scrape
         details: Whether to scrape detailed job information
+        login: Whether to attempt login before scraping
+        logins_path: Path to CSV file with login credentials
+        headless: Whether to run in headless mode
     """
     print(f"\n{Fore.GREEN}=== Testing StepStone scraper ===")
     print(f"{Fore.YELLOW}Searching for: {job_title} in {location}")
-    print(f"{Fore.YELLOW}Max pages: {max_pages}, Get details: {details}\n")
+    print(f"{Fore.YELLOW}Max pages: {max_pages}, Get details: {details}")
 
-    # Create a scraper instance and try to search for jobs
-    scraper = StepStoneScraper(
-        headless=False
-    )  # Set to False to see the browser in action
+    if login:
+        print(f"{Fore.BLUE}Will attempt to login using credentials from CSV file")
+        if logins_path:
+            print(f"{Fore.BLUE}Using logins file: {logins_path}")
+        else:
+            print(f"{Fore.BLUE}Using default logins file in config/logins.csv")
+
+    # Create a scraper instance
+    scraper = StepStoneScraper(headless=headless, logins_path=logins_path)
 
     try:
+        # Login if requested
+        if login:
+            print(f"{Fore.YELLOW}Attempting to login...{Style.RESET_ALL}")
+            if scraper.login(task_type="search" if not details else "details"):
+                print(f"{Fore.GREEN}Login successful!{Style.RESET_ALL}")
+            else:
+                print(
+                    f"{Fore.RED}Login failed. Continuing without login...{Style.RESET_ALL}"
+                )
+
         # Search for jobs
-        print(f"{Fore.YELLOW}Searching for jobs...")
+        print(f"{Fore.YELLOW}Searching for jobs...{Style.RESET_ALL}")
         job_listings = scraper.search_jobs(job_title, location, max_pages=max_pages)
         print(f"{Fore.GREEN}Found {len(job_listings)} job listings")
 
@@ -69,7 +93,7 @@ def test_scraper(
         if details and job_listings:
             job_url = job_listings[0]["url"]
             print(
-                f"{Fore.YELLOW}Getting details for first job ({job_listings[0]['title']})..."
+                f"{Fore.YELLOW}Getting details for first job ({job_listings[0]['title']})...{Style.RESET_ALL}"
             )
             job_details = scraper.scrape_job_details(job_url)
 
@@ -99,7 +123,7 @@ def test_scraper(
     finally:
         # Always close the scraper to clean up resources
         print(f"{Fore.YELLOW}Closing scraper...{Style.RESET_ALL}")
-        scraper._close_driver()  # Use _close_driver method instead of close()
+        scraper._close_driver()
 
 
 def main():
@@ -113,10 +137,23 @@ def main():
     parser.add_argument(
         "--details", action="store_true", help="Scrape detailed job information"
     )
+    parser.add_argument(
+        "--login", action="store_true", help="Login to StepStone before scraping"
+    )
+    parser.add_argument("--logins-path", help="Path to CSV file with login credentials")
+    parser.add_argument("--headless", action="store_true", help="Run in headless mode")
 
     args = parser.parse_args()
 
-    test_scraper(args.job_title, args.location, args.max_pages, args.details)
+    test_scraper(
+        args.job_title,
+        args.location,
+        args.max_pages,
+        args.details,
+        args.login,
+        args.logins_path,
+        args.headless,
+    )
 
 
 if __name__ == "__main__":

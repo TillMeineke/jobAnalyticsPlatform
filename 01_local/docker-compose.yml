@@ -1,26 +1,26 @@
 # Services for the Job Analytics Platform
 services:
-  # PostgreSQL database for all layers
+  # PostgreSQL database for kestra
   postgres:
     image: postgres:latest
-    container_name: job-analytics-postgres
+    container_name: kestra-db
     pull_policy: if_not_present
     environment:
-      - POSTGRES_USER=jobanalytics
-      - POSTGRES_PASSWORD=jobanalytics
-      - POSTGRES_DB=jobanalytics
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: k3str4
+    # ports:
+    #   - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init/postgres:/docker-entrypoint-initdb.d
     networks:
       - job-analytics-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobanalytics"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
 
   # Metabase for dashboards
   metabase:
@@ -64,19 +64,21 @@ services:
       - kestra_data:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
-      - ./flows:/app/flows # Mount local flows for easy import in dev
-    ports:
-      - "8080:8080"
-      - "8081:8081"
+      # - ./flows:/app/flows # Mount local flows for easy import in dev
     environment:
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
             url: jdbc:postgresql://postgres:5432/kestra
             driverClassName: org.postgresql.Driver
-            username: jobanalytics
-            password: jobanalytics
+            username: kestra
+            password: k3str4
         kestra:
+          server:
+            basic-auth:
+              enabled: false
+              username: "admin@kestra.io" # it must be a valid email address
+              password: kestra
           repository:
             type: postgres
           storage:
@@ -91,16 +93,42 @@ services:
           url: http://localhost:8080/
           tutorialFlows:
             enabled: false
-          server:
-            basic-auth:
-              enabled: false
-            workers:
-              enabled: true
+    ports:
+      - "8080:8080"
+      - "8081:8081"
     networks:
       - job-analytics-network
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
+
+  # Postgres for database
+  pgdatabase:
+    image: postgres:latest
+    container_name: job-analytics-pgdatabase
+    pull_policy: if_not_present
+    environment:
+      POSTGRES_DB: jobanalytics_data
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./jobs_postgres_data:/var/lib/postgresql/data:rw
+    ports:
+      - "5433:5432"
+    networks:
+      - job-analytics-network
+
+  metabase_db:
+    image: postgres:latest
+    container_name: metabase-db
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: jobanalytics
+      POSTGRES_PASSWORD: jobanalytics
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+    networks:
+      - job-analytics-network
 
   # Python service for running scripts
   python:
@@ -126,3 +154,5 @@ volumes:
     name: job-analytics-postgres-data
   kestra_data:
     name: job-analytics-kestra-data
+  metabase_db_data:
+    name: job-analytics-metabase-db-data
